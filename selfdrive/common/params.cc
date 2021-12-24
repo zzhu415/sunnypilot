@@ -30,6 +30,8 @@ int fsync_dir(const std::string &path) {
 bool create_params_path(const std::string &param_path, const std::string &key_path) {
   // Make sure params path exists
   if (!util::file_exists(param_path) && !util::create_directories(param_path, 0775)) {
+    std::printf("sunnythree: %s\n", param_path.c_str());
+    std::printf("sunnyfour: %s\n", key_path.c_str());
     return false;
   }
 
@@ -84,10 +86,14 @@ private:
 
 std::unordered_map<std::string, uint32_t> keys = {
     {"AccessToken", CLEAR_ON_MANAGER_START | DONT_LOG},
+    {"ACCMADSCombo", PERSISTENT},
     {"AthenadPid", PERSISTENT},
+    {"AutoLaneChangeTimer", PERSISTENT},
     {"BootedOnroad", CLEAR_ON_MANAGER_START | CLEAR_ON_IGNITION_OFF},
+    {"BrightnessControl", PERSISTENT},
     {"CalibrationParams", PERSISTENT},
     {"CarBatteryCapacity", PERSISTENT},
+    {"CarModel", PERSISTENT},
     {"CarParams", CLEAR_ON_MANAGER_START | CLEAR_ON_PANDA_DISCONNECT | CLEAR_ON_IGNITION_ON},
     {"CarParamsCache", CLEAR_ON_MANAGER_START | CLEAR_ON_PANDA_DISCONNECT},
     {"CarVin", CLEAR_ON_MANAGER_START | CLEAR_ON_PANDA_DISCONNECT | CLEAR_ON_IGNITION_ON},
@@ -95,14 +101,19 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"CompletedTrainingVersion", PERSISTENT},
     {"ControlsReady", CLEAR_ON_MANAGER_START | CLEAR_ON_PANDA_DISCONNECT | CLEAR_ON_IGNITION_ON},
     {"CurrentRoute", CLEAR_ON_MANAGER_START | CLEAR_ON_IGNITION_ON},
+    {"DevUI", PERSISTENT},
+    {"DisableMADS", PERSISTENT},
+    {"DisableOnroadUploads", PERSISTENT},
     {"DisablePowerDown", PERSISTENT},
     {"DisableRadar_Allow", PERSISTENT},
     {"DisableRadar", PERSISTENT}, // WARNING: THIS DISABLES AEB
     {"DisableUpdates", PERSISTENT},
+    {"DynamicLaneProfile", PERSISTENT},
     {"DongleId", PERSISTENT},
     {"DoReboot", CLEAR_ON_MANAGER_START},
     {"DoShutdown", CLEAR_ON_MANAGER_START},
     {"DoUninstall", CLEAR_ON_MANAGER_START},
+    {"EnableDebugSnapshot", PERSISTENT},
     {"EnableWideCamera", CLEAR_ON_MANAGER_START},
     {"EndToEndToggle", PERSISTENT},
     {"ForcePowerDown", CLEAR_ON_MANAGER_START},
@@ -112,8 +123,11 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"GithubSshKeys", PERSISTENT},
     {"GithubUsername", PERSISTENT},
     {"GitRemote", PERSISTENT},
+    {"GpxDeleteAfterUpload", PERSISTENT},
+    {"GpxDeleteIfUploaded", PERSISTENT},
     {"GsmApn", PERSISTENT},
     {"GsmRoaming", PERSISTENT},
+    {"HandsOnWheelMonitoring", PERSISTENT},
     {"HardwareSerial", PERSISTENT},
     {"HasAcceptedTerms", PERSISTENT},
     {"HasPrime", PERSISTENT},
@@ -129,28 +143,45 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"IsUpdateAvailable", CLEAR_ON_MANAGER_START},
     {"JoystickDebugMode", CLEAR_ON_MANAGER_START | CLEAR_ON_IGNITION_OFF},
     {"LastAthenaPingTime", CLEAR_ON_MANAGER_START},
+    {"LastCarModel", PERSISTENT},
     {"LastGPSPosition", PERSISTENT},
     {"LastPowerDropDetected", CLEAR_ON_MANAGER_START},
+    {"LastSpeedLimitSignTap", PERSISTENT},
     {"LastUpdateException", PERSISTENT},
     {"LastUpdateTime", PERSISTENT},
     {"LiveParameters", PERSISTENT},
+    {"MaxTimeOffroad", PERSISTENT},
     {"NavDestination", CLEAR_ON_MANAGER_START | CLEAR_ON_IGNITION_OFF},
     {"NavSettingTime24h", PERSISTENT},
     {"NavdRender", PERSISTENT},
+    {"NoOffroadFix", PERSISTENT},
+    {"OnroadScreenOff", PERSISTENT},
+    {"OnroadScreenOffBrightness", PERSISTENT},
     {"OpenpilotEnabledToggle", PERSISTENT},
     {"PandaHeartbeatLost", CLEAR_ON_MANAGER_START | CLEAR_ON_IGNITION_OFF},
     {"Passive", PERSISTENT},
+    {"PrebuiltOn", PERSISTENT},
     {"PrimeRedirected", PERSISTENT},
+    {"ProcessNotRunningOff", PERSISTENT},
+    {"QuietDrive", PERSISTENT},
     {"RecordFront", PERSISTENT},
     {"RecordFrontLock", PERSISTENT},  // for the internal fleet
     {"ReleaseNotes", PERSISTENT},
+    {"ReverseAccChange", PERSISTENT},
     {"ShouldDoUpdate", CLEAR_ON_MANAGER_START},
+    {"ShowDebugUI", PERSISTENT},
     {"SnoozeUpdate", CLEAR_ON_MANAGER_START | CLEAR_ON_IGNITION_OFF},
+    {"SpeedLimitControl", PERSISTENT},
+    {"SpeedLimitPercOffset", PERSISTENT},
+    {"SpeedLimitValueOffset", PERSISTENT},
     {"SshEnabled", PERSISTENT},
+    {"StockResumeAlt", PERSISTENT},
     {"SubscriberInfo", PERSISTENT},
     {"TermsVersion", PERSISTENT},
     {"Timezone", PERSISTENT},
     {"TrainingVersion", PERSISTENT},
+    {"TurnSpeedControl", PERSISTENT},
+    {"TurnVisionControl", PERSISTENT},
     {"UpdateAvailable", CLEAR_ON_MANAGER_START},
     {"UpdateFailedCount", CLEAR_ON_MANAGER_START},
     {"Version", PERSISTENT},
@@ -185,6 +216,7 @@ bool Params::checkKey(const std::string &key) {
 }
 
 ParamKeyType Params::getKeyType(const std::string &key) {
+  std::printf("sunnyone: %s\n", key.c_str());
   return static_cast<ParamKeyType>(keys[key]);
 }
 
