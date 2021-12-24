@@ -35,7 +35,7 @@ AddrCheckStruct hyundai_addr_checks[] = {
            {881, 0, 8, .expected_timestep = 10000U}, { 0 }}},
   {.msg = {{902, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 10000U}, { 0 }, { 0 }}},
   {.msg = {{916, 0, 8, .check_checksum = true, .max_counter = 7U, .expected_timestep = 10000U}, { 0 }, { 0 }}},
-  {.msg = {{1057, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},
+  {.msg = {{1057, 2, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},
 };
 #define HYUNDAI_ADDR_CHECK_LEN (sizeof(hyundai_addr_checks) / sizeof(hyundai_addr_checks[0]))
 
@@ -149,13 +149,22 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
                                  hyundai_get_checksum, hyundai_compute_checksum,
                                  hyundai_get_counter);
 
-  if (valid && (GET_BUS(to_push) == 0U)) {
+  if (valid) {
     int addr = GET_ADDR(to_push);
 
     if (addr == 593) {
       int torque_driver_new = ((GET_BYTES_04(to_push) & 0x7ffU) * 0.79) - 808; // scale down new driver torque signal to match previous one
       // update array of samples
       update_sample(&torque_driver, torque_driver_new);
+    }
+
+    if (addr == 913) {
+      bool lfa_pressed = (GET_BYTES_04(to_push) >> 4) & 0x1; // LFA on signal
+      if (lfa_pressed && !lfa_pressed_prev)
+      {
+        controls_allowed = 1;
+      }
+      lfa_pressed_prev = lfa_pressed;
     }
 
     if (hyundai_longitudinal) {
@@ -168,7 +177,6 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
             controls_allowed = 1;
             break;
           case 4:  // cancel
-            controls_allowed = 0;
             break;
           default:
             break;  // any other button is irrelevant
@@ -182,11 +190,27 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
         if (cruise_engaged && !cruise_engaged_prev) {
           controls_allowed = 1;
         }
-        if (!cruise_engaged) {
-          controls_allowed = 0;
-        }
         cruise_engaged_prev = cruise_engaged;
       }
+    }
+
+    if (addr == 1056) {
+      bool acc_main_on = GET_BYTES_04(to_push) & 0x1; // ACC main_on signal
+      if (acc_main_on && !acc_main_on_prev)
+      {
+        controls_allowed = 1;
+      }
+      acc_main_on_prev = acc_main_on;
+    }
+
+    if (addr == 1056) {
+      bool acc_main_on = GET_BYTES_04(to_push) & 0x1; // ACC main_on signal
+      if (acc_main_on_prev != acc_main_on)
+      {
+        disengageFromBrakes = false;
+        controls_allowed = 0;
+      }
+      acc_main_on_prev = acc_main_on;
     }
 
     // read gas pressed signal
@@ -210,7 +234,7 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
       brake_pressed = (GET_BYTE(to_push, 6) >> 7) != 0U;
     }
 
-    bool stock_ecu_detected = (addr == 832);
+    bool stock_ecu_detected = ((GET_BUS(to_push) == 2U) && (addr == 593));
 
     // If openpilot is controlling longitudinal we need to ensure the radar is turned off
     // Enforce by checking we don't see SCC12
@@ -354,6 +378,7 @@ static int hyundai_fwd_hook(int bus_num, CANPacket_t *to_fwd) {
 }
 
 static const addr_checks* hyundai_init(int16_t param) {
+  disengageFromBrakes = false;
   controls_allowed = false;
   relay_malfunction_reset();
 
@@ -374,6 +399,7 @@ static const addr_checks* hyundai_init(int16_t param) {
 }
 
 static const addr_checks* hyundai_legacy_init(int16_t param) {
+  disengageFromBrakes = false;
   controls_allowed = false;
   relay_malfunction_reset();
 
