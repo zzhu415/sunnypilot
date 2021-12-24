@@ -202,7 +202,7 @@ def main():
   initial_tombstones = set(get_tombstones())
 
   sentry_sdk.utils.MAX_STRING_LENGTH = 8192
-  sentry_sdk.init("https://a40f22e13cbc4261873333c125fc9d38@o33823.ingest.sentry.io/157615",
+  sentry_sdk.init("https://7e3be9bfcfe04c9abe58bd25fe290d1a@o1138119.ingest.sentry.io/6191481",
                   default_integrations=False, release=get_version())
 
   dongle_id = Params().get("DongleId", encoding='utf-8')
