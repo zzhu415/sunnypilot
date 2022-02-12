@@ -10,7 +10,7 @@ const int SUBARU_DRIVER_TORQUE_FACTOR = 10;
 const int SUBARU_STANDSTILL_THRSLD = 20;  // about 1kph
 const uint32_t SUBARU_L_BRAKE_THRSLD = 2; // filter sensor noise, max_brake is 400
 
-const CanMsg SUBARU_TX_MSGS[] = {{0x122, 0, 8}, {0x221, 0, 8}, {0x321, 0, 8}, {0x322, 0, 8}, {0x40, 2, 8}, {0x139, 2, 8}, {0x576, 0, 8}}; // ES_LKAS_State
+const CanMsg SUBARU_TX_MSGS[] = {{0x122, 0, 8}, {0x221, 0, 8}, {0x321, 0, 8}, {0x322, 0, 8}, {0x40, 2, 8}, {0x139, 2, 8}, {0x322, 0, 8}}; // ES_LKAS_State
 #define SUBARU_TX_MSGS_LEN (sizeof(SUBARU_TX_MSGS) / sizeof(SUBARU_TX_MSGS[0]))
 
 const CanMsg SUBARU_L_TX_MSGS[] = {{0x161, 0, 8}, {0x164, 0, 8}, {0x140, 2, 8}};
@@ -25,7 +25,7 @@ AddrCheckStruct subaru_addr_checks[] = {
   {.msg = {{0x13a, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},
   {.msg = {{0x13c, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},
   {.msg = {{0x240, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 50000U}, { 0 }, { 0 }}},
-  {.msg = {{0x576, 2, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 100000U}, { 0 }, { 0 }}},
+  {.msg = {{0x322, 2, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 100000U}, { 0 }, { 0 }}},
 };
 #define SUBARU_ADDR_CHECK_LEN (sizeof(subaru_addr_checks) / sizeof(subaru_addr_checks[0]))
 addr_checks subaru_rx_checks = {subaru_addr_checks, SUBARU_ADDR_CHECK_LEN};
@@ -90,8 +90,8 @@ static int subaru_rx_hook(CANPacket_t *to_push) {
 
   if (valid && (GET_BUS(to_push) == 2U)) {
     int addr = GET_ADDR(to_push);
-    if (addr == 0x576) {
-      bool lkas_pressed = (GET_BYTES_04(to_push) >> 17) & 1; // LKAS_ACTIVE signal
+    if (addr == 0x322) {
+      bool lkas_pressed = (GET_BYTE(to_push, 2) & 0x0C) > 0; // LKAS_Dash_State signal
       if (lkas_pressed && !lkas_pressed_prev)
       {
         controls_allowed = 1;
