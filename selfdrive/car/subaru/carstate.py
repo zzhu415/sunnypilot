@@ -93,7 +93,7 @@ class CarState(CarStateBase):
       self.acc_main_enabled = cp_cam.vl["ES_Distance"]["Cruise_Button"] == 0
     else:
       #self.acc_main_enabled = cp.vl["Cruise_Buttons"]["Main"] == 0
-      self.acc_main_enabled = cp_cam.vl["ES_LKAS_State"]["LKAS_Dash_State"] == 0
+      self.acc_main_enabled = cp_cam.vl["ES_LKAS_State"]["LKAS_Dash_State"]
 
     if self.car_fingerprint != (PREGLOBAL_CARS or CAR.CROSSTREK_2020H):
       self.cruise_set = cp_cam.vl["ES_Distance"]["Cruise_Set"] == 0
