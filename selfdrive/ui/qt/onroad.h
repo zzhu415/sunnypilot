@@ -7,6 +7,9 @@
 #include "selfdrive/ui/qt/widgets/cameraview.h"
 #include "selfdrive/ui/ui.h"
 
+#include <QTimer>
+#include "selfdrive/ui/qt/screenrecorder/screenrecorder.h"
+
 
 // ***** onroad widgets *****
 
@@ -178,6 +181,8 @@ private:
   QColor bg = bg_colors[STATUS_DISENGAGED];
   QWidget *map = nullptr;
   QHBoxLayout* split;
+  ScreenRecoder* recorder;
+  std::shared_ptr<QTimer> record_timer;
 
 signals:
   void updateStateSignal(const UIState &s);

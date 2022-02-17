@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <iomanip>
 #include <sstream>
+#include <QMouseEvent>
 
 #include "selfdrive/common/timing.h"
 #include "selfdrive/ui/qt/util.h"
@@ -34,6 +35,24 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
     buttons->setFixedWidth(w);
   });
   stacked_layout->addWidget(buttons);
+
+  // screen recoder - neokii
+  record_timer = std::make_shared<QTimer>();
+  QObject::connect(record_timer.get(), &QTimer::timeout, [=]() {
+    if (recorder) {
+      recorder->update_screen();
+    }
+  });
+  record_timer->start(1000/UI_FREQ);
+
+  QWidget* recorder_widget = new QWidget(this);
+  QVBoxLayout * recorder_layout = new QVBoxLayout (recorder_widget);
+  recorder_layout->setMargin(35);
+  recorder = new ScreenRecoder(this);
+  recorder_layout->addWidget(recorder);
+  recorder_layout->setAlignment(recorder, Qt::AlignRight | Qt::AlignBottom);
+
+  stacked_layout->addWidget(recorder_widget);
 
   QWidget * split_wrapper = new QWidget;
   split = new QHBoxLayout(split_wrapper);
@@ -145,6 +164,7 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
   auto longitudinal_plan = sm["longitudinalPlan"].getLongitudinalPlan();
   const QRect speed_limit_touch_rect = speed_sgn_rc.adjusted(-50, -50, 50, 50);
   const QRect debug_tap_rect = QRect(rect().center().x() - 200, rect().center().y() - 200, 400, 400);
+  const QRect screen_recorder_rect = QRect(rect().right() - 225, rect().bottom() - 256, 190, 190);
 
   if (longitudinal_plan.getSpeedLimit() > 0.0 && speed_limit_touch_rect.contains(e->x(), e->y())) {
     // If touching the speed limit sign area when visible
@@ -155,6 +175,12 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
   }
   else if (QUIState::ui_state.scene.debug_snapshot_enabled && debug_tap_rect.contains(e->x(), e->y())) {
     issue_debug_snapshot(*(QUIState::ui_state.sm));
+    propagate_event = false;
+  }
+  else if (screen_recorder_rect.contains(e->x(), e->y())) {
+    if (recorder) {
+      recorder->toggle();
+    }
     propagate_event = false;
   }
   else if (map != nullptr) {
@@ -184,6 +210,10 @@ void OnroadWindow::offroadTransition(bool offroad) {
   // update stream type
   bool wide_cam = Hardware::TICI() && Params().getBool("EnableWideCamera");
   nvg->setStreamType(wide_cam ? VISION_STREAM_RGB_WIDE : VISION_STREAM_RGB_BACK);
+
+  if(offroad && recorder) {
+    recorder->stop(false);
+  }
 }
 
 void OnroadWindow::paintEvent(QPaintEvent *event) {
