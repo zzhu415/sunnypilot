@@ -166,7 +166,7 @@ class CarController():
           if CS.acc_main_init == 0 and self.init_acc_main:
             self.init_acc_main = False
           elif CS.acc_main_init == 1 and not self.init_acc_main:
-            can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL))
+            can_sends.extend([create_clu11(self.packer, frame, CS.clu11, Buttons.SET_DECEL)] * 25)
             self.init_acc_main = True
       if pcm_cancel_cmd:
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL))

@@ -111,7 +111,7 @@ class CarState(CarStateBase):
 
     if self.CP.carFingerprint in CAR.VELOSTER:
       self.engineRPM = cp.vl["EMS_DCT11"]["N"]
-    elif self.CP.carFingerprint not in EV_CAR:
+    elif self.CP.carFingerprint not in (HYBRID_CAR | EV_CAR):
       self.engineRPM = cp.vl["EMS_366"]["N"]
 
     # cruise state
@@ -366,10 +366,6 @@ class CarState(CarStateBase):
       if CP.carFingerprint in HYBRID_CAR:
         signals += [
           ("CR_Vcu_AccPedDep_Pos", "E_EMS11", 0)
-          ("N", "EMS_366", 0),
-        ]
-        checks += [
-          ("EMS_366", 100),
         ]
       else:
         signals += [
