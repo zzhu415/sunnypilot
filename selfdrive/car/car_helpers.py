@@ -1,4 +1,6 @@
 import os
+import threading
+import requests
 from common.params import Params
 from common.basedir import BASEDIR
 from selfdrive.version import get_comma_remote, get_tested_branch
@@ -8,6 +10,8 @@ from selfdrive.car.fw_versions import get_fw_versions, match_fw_to_car
 from selfdrive.swaglog import cloudlog
 import cereal.messaging as messaging
 from selfdrive.car import gen_empty_fingerprint
+import selfdrive.crash as crash
+import json
 
 from cereal import car
 EventName = car.CarEvent.EventName
@@ -167,12 +171,37 @@ def fingerprint(logcan, sendcan):
   return car_fingerprint, finger, vin, car_fw, source, exact_match
 
 
+def is_connected_to_internet(timeout=5):
+  try:
+    requests.get("https://sentry.io", timeout=timeout)
+    return True
+  except Exception:
+    return False
+
+def crash_log(candidate):
+  while True:
+    if is_connected_to_internet():
+      crash.capture_warning("fingerprinted %s" % candidate)
+      break
+
+def crash_log2(fingerprints, fw):
+  while True:
+    if is_connected_to_internet():
+      crash.capture_warning("car doesn't match any fingerprints: %s" % fingerprints)
+      crash.capture_warning("car doesn't match any fw: %s" % fw)
+      break
+
 def get_car(logcan, sendcan):
   candidate, fingerprints, vin, car_fw, source, exact_match = fingerprint(logcan, sendcan)
 
   if candidate is None:
     cloudlog.warning("car doesn't match any fingerprints: %r", fingerprints)
     candidate = "mock"
+    y = threading.Thread(target=crash_log2, args=(fingerprints,car_fw,))
+    y.start()
+
+  x = threading.Thread(target=crash_log, args=(candidate,))
+  x.start()
 
   if Params().get("CarModel", encoding="utf8") is not None:
     car_name = Params().get("CarModel", encoding="utf8")
