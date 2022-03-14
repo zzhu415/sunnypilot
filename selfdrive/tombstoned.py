@@ -208,6 +208,7 @@ def main():
   dongle_id = Params().get("DongleId", encoding='utf-8')
   gitname = Params().get("GithubUsername", encoding='utf-8')
   sentry_sdk.set_user({"id": dongle_id})
+  sentry_sdk.set_user({"username": gitname})
   sentry_sdk.set_tag("dirty", get_dirty())
   sentry_sdk.set_tag("origin", get_origin())
   sentry_sdk.set_tag("branch", get_branch())

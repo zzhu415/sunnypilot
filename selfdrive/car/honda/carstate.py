@@ -371,7 +371,7 @@ class CarState(CarStateBase):
         if self.disable_mads:
           self.lkasEnabled = False
 
-    if self.CP.pcmCruise and self.CP.minEnableSpeed > 0 and self.CP.pcmCruiseSpeed:
+    if self.CP.pcmCruise and self.CP.minEnableSpeed > 0 or not self.CP.pcmCruiseSpeed:
       if ret.gasPressed and not ret.cruiseState.enabled:
         self.accEnabled = False
       self.accEnabled = ret.cruiseState.enabled or self.accEnabled

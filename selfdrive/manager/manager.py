@@ -122,9 +122,11 @@ def manager_init():
   cloudlog.bind_global(dongle_id=dongle_id, version=get_version(), dirty=get_dirty(),
                        device=HARDWARE.get_device_type())
 
+  gitname = Params().get("GithubUsername", encoding='utf-8')
+
   if get_comma_remote() and not (os.getenv("NOLOG") or os.getenv("NOCRASH") or PC):
     crash.init()
-  crash.bind_user(id=dongle_id)
+  crash.bind_user(id=dongle_id, username=gitname)
   crash.bind_extra(dirty=get_dirty(), origin=get_origin(), branch=get_short_branch(), commit=get_commit(),
                    device=HARDWARE.get_device_type())
 

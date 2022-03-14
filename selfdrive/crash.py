@@ -9,6 +9,7 @@ import traceback
 import requests
 from cereal import car
 from datetime import datetime
+from selfdrive.hardware import HARDWARE
 
 import sentry_sdk
 from sentry_sdk.integrations.threading import ThreadingIntegration
@@ -38,7 +39,7 @@ try:
 except:
   gitname = ""
 try:
-  ip = requests.get('https://checkip.amazonaws.com/').text.strip()
+  ip = requests.get('https://api.my-ip.io/ip').text.strip()
 except Exception:
   ip = "255.255.255.255"
 error_tags = {'dirty': get_dirty(), 'dongle_id': dongle_id, 'branch': get_branch(), 'remote': get_origin(), 'fingerprintedAs': candidate, 'gitname':gitname}
@@ -58,11 +59,13 @@ def bind_user(**kwargs) -> None:
   sentry_sdk.set_user(kwargs)
 
 def capture_warning(warning_string):
-  bind_user(id=dongle_id, ip_address=ip, name=gitname)
+  bind_user(id=dongle_id, username=gitname)
+  sentry_sdk.set_tag("ip_address", ip)
   sentry_sdk.capture_message(warning_string, level='warning')
 
 def capture_info(info_string):
-  bind_user(id=dongle_id, ip_address=ip, name=gitname)
+  bind_user(id=dongle_id, username=gitname)
+  sentry_sdk.set_tag("ip_address", ip)
   sentry_sdk.capture_message(info_string, level='info')
 
 def bind_extra(**kwargs) -> None:
@@ -75,8 +78,10 @@ def init() -> None:
                   release=get_version())
 
 sentry_sdk.set_user({"id": dongle_id})
-sentry_sdk.set_user({"name": gitname})
+sentry_sdk.set_user({"username": gitname})
 sentry_sdk.set_tag("dirty", get_dirty())
 sentry_sdk.set_tag("origin", get_origin())
 sentry_sdk.set_tag("branch", get_branch())
 sentry_sdk.set_tag("commit", get_commit())
+sentry_sdk.set_tag("serial", HARDWARE.get_serial())
+sentry_sdk.set_tag("ip", ip)
