@@ -280,8 +280,10 @@ class CarController():
         else:
           can_sends.append(hondacan.spam_buttons_command(self.packer, CruiseButtons.RES_ACCEL, idx, CS.CP.carFingerprint))
       else:
-        self.stopped_lead_distance = CS.lead_distance
-        self.prev_lead_distance = CS.lead_distance
+        if Params().get_bool("StockResumeAlt"):
+          if CS.CP.carFingerprint in (CAR.ACCORD, CAR.ACCORDH):
+            self.stopped_lead_distance = CS.lead_distance
+            self.prev_lead_distance = CS.lead_distance
       if not CS.out.cruiseState.standstill and (enabled and CS.acc_active):
         cruise_button = self.get_cruise_buttons(CS)
         if cruise_button is not None:
