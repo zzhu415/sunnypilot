@@ -233,9 +233,12 @@ class CarState(CarStateBase):
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(gear))
 
     if not self.CP.openpilotLongitudinalControl:
-      if self.CP.carFingerprint in FEATURES["use_fca"]:
+      if self.CP.carFingerprint in FEATURES["use_fca"] and not self.non_scc:
         ret.stockAeb = cp.vl["FCA11"]["FCA_CmdAct"] != 0
         ret.stockFcw = cp.vl["FCA11"]["CF_VSM_Warn"] == 2
+      elif self.CP.carFingerprint in FEATURES["use_fca"] and self.non_scc:
+        ret.stockAeb = cp_cam.vl["FCA11"]["FCA_CmdAct"] != 0
+        ret.stockFcw = cp_cam.vl["FCA11"]["CF_VSM_Warn"] == 2
       else:
         ret.stockAeb = cp.vl["SCC12"]["AEB_CmdAct"] != 0
         ret.stockFcw = cp.vl["SCC12"]["CF_VSM_Warn"] == 2
@@ -352,7 +355,7 @@ class CarState(CarStateBase):
           ("CF_Lvr_CruiseSet", "LVR12", 0),
         ]
 
-      if CP.carFingerprint in FEATURES["use_fca"]:
+      if CP.carFingerprint in FEATURES["use_fca"] and CP.sccBus != -1:
         signals += [
           ("FCA_CmdAct", "FCA11", 0),
           ("CF_VSM_Warn", "FCA11", 0),
@@ -445,5 +448,13 @@ class CarState(CarStateBase):
     checks = [
       ("LKAS11", 100)
     ]
+
+    if not CP.openpilotLongitudinalControl:
+      if CP.carFingerprint in FEATURES["use_fca"] and CP.sccBus == -1:
+        signals += [
+          ("FCA_CmdAct", "FCA11", 0),
+          ("CF_VSM_Warn", "FCA11", 0),
+        ]
+        checks += [("FCA11", 50)]
 
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, 2)
