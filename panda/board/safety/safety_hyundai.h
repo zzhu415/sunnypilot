@@ -27,7 +27,7 @@ const CanMsg HYUNDAI_LONG_TX_MSGS[] = {
   {1290, 0, 8}, // SCC13 Bus 0
   {905, 0, 8},  // SCC14 Bus 0
   {1186, 0, 2}, // FRT_RADAR11 Bus 0
-  {909, 0, 8},  // FCA11 Bus 0
+  {909, 2, 8},  // FCA11 Bus 2
   {1155, 0, 8}, // FCA12 Bus 0
   {2000, 0, 8}, // radar UDS TX addr Bus 0 (for radar disable)
  };
