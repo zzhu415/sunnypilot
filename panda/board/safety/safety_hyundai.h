@@ -150,6 +150,7 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
   bool valid = addr_safety_check(to_push, &hyundai_rx_checks,
                                  hyundai_get_checksum, hyundai_compute_checksum,
                                  hyundai_get_counter);
+  int addr = GET_ADDR(to_push);
   int bus = GET_BUS(to_push);
 
   if ((addr == 1056 || addr == 1057) && HYUNDAI_SCC_BUS != bus) {
@@ -159,7 +160,6 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
   }
 
   if (valid && (GET_BUS(to_push) == 0U)) {
-    int addr = GET_ADDR(to_push);
 
     if (addr == 593) {
       int torque_driver_new = ((GET_BYTES_04(to_push) & 0x7ffU) * 0.79) - 808; // scale down new driver torque signal to match previous one
