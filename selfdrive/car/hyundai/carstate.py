@@ -131,13 +131,13 @@ class CarState(CarStateBase):
     self.cruiseState_standstill = ret.cruiseState.standstill
 
     if ret.cruiseState.available:
-      if not self.CP.pcmCruise or not self.CP.pcmCruiseSpeed:
-        if self.prev_cruise_buttons == 2: # SET-
-          if self.cruise_buttons != 2:
-            self.accEnabled = True
-        elif self.prev_cruise_buttons == 1 and self.resumeAvailable == True: # RESUME+
-          if self.cruise_buttons != 1:
-            self.accEnabled = True
+      #if not self.CP.pcmCruise or not self.CP.pcmCruiseSpeed:
+      #  if self.prev_cruise_buttons == 2: # SET-
+      #    if self.cruise_buttons != 2:
+      #      self.accEnabled = True
+      #  elif self.prev_cruise_buttons == 1 and self.resumeAvailable == True: # RESUME+
+      #    if self.cruise_buttons != 1:
+      #      self.accEnabled = True
 
       if not self.disable_mads:
         if self.CP.carFingerprint in FEATURES["use_lfa_button"]:
@@ -148,13 +148,13 @@ class CarState(CarStateBase):
           if self.prev_acc_main_enabled != 1: #1 == not ACC Main button
             if self.acc_main_enabled == 1:
               self.accMainEnabled = not self.accMainEnabled
-        if self.acc_mads_combo:
-          if not self.prev_acc_mads_combo and ret.cruiseState.enabled:
-            if self.CP.carFingerprint in FEATURES["use_lfa_button"]:
-              self.lfaEnabled = True
-            elif self.CP.carFingerprint not in FEATURES["use_lfa_button"]:
-              self.accMainEnabled = True
-          self.prev_acc_mads_combo = ret.cruiseState.enabled
+        #if self.acc_mads_combo:
+        #  if not self.prev_acc_mads_combo and ret.cruiseState.enabled:
+        #    if self.CP.carFingerprint in FEATURES["use_lfa_button"]:
+        #      self.lfaEnabled = True
+        #    elif self.CP.carFingerprint not in FEATURES["use_lfa_button"]:
+        #      self.accMainEnabled = True
+        #  self.prev_acc_mads_combo = ret.cruiseState.enabled
     else:
       if self.CP.carFingerprint in FEATURES["use_lfa_button"]:
         self.lfaEnabled = False
@@ -162,40 +162,40 @@ class CarState(CarStateBase):
         self.accMainEnabled = False
       self.accEnabled = False
 
-    if (not self.CP.pcmCruise) or (self.CP.pcmCruise and self.CP.minEnableSpeed > 0) or not self.CP.pcmCruiseSpeed:
-      if self.prev_cruise_buttons != 4: # CANCEL
-        if self.cruise_buttons == 4:
-          self.accEnabled = False
-          if self.disable_mads:
-            if self.CP.carFingerprint in FEATURES["use_lfa_button"]:
-              self.lfaEnabled = False
-            elif self.CP.carFingerprint not in FEATURES["use_lfa_button"]:
-              self.accMainEnabled = False
-      if ret.brakePressed:
-        self.accEnabled = False
-        if self.disable_mads:
-          if self.CP.carFingerprint in FEATURES["use_lfa_button"]:
-            self.lfaEnabled = False
-          elif self.CP.carFingerprint not in FEATURES["use_lfa_button"]:
-            self.accMainEnabled = False
+    #if (not self.CP.pcmCruise) or (self.CP.pcmCruise and self.CP.minEnableSpeed > 0) or not self.CP.pcmCruiseSpeed:
+    #  if self.prev_cruise_buttons != 4: # CANCEL
+    #    if self.cruise_buttons == 4:
+    #      self.accEnabled = False
+    #      if self.disable_mads:
+    #        if self.CP.carFingerprint in FEATURES["use_lfa_button"]:
+    #          self.lfaEnabled = False
+    #        elif self.CP.carFingerprint not in FEATURES["use_lfa_button"]:
+    #          self.accMainEnabled = False
+    #  if ret.brakePressed:
+    #    self.accEnabled = False
+    #    if self.disable_mads:
+    #      if self.CP.carFingerprint in FEATURES["use_lfa_button"]:
+    #        self.lfaEnabled = False
+    #      elif self.CP.carFingerprint not in FEATURES["use_lfa_button"]:
+    #        self.accMainEnabled = False
 
-    if self.CP.pcmCruise and self.CP.minEnableSpeed > 0 and self.CP.pcmCruiseSpeed:
-      if ret.gasPressed and not ret.cruiseState.enabled:
-        self.accEnabled = False
-      self.accEnabled = ret.cruiseState.enabled or self.accEnabled
+    #if self.CP.pcmCruise and self.CP.minEnableSpeed > 0 and self.CP.pcmCruiseSpeed:
+    #  if ret.gasPressed and not ret.cruiseState.enabled:
+    #    self.accEnabled = False
+    #  self.accEnabled = ret.cruiseState.enabled or self.accEnabled
 
-    if not self.CP.pcmCruise or not self.CP.pcmCruiseSpeed:
-      ret.cruiseState.enabled = self.accEnabled
+    #if not self.CP.pcmCruise or not self.CP.pcmCruiseSpeed:
+    #  ret.cruiseState.enabled = self.accEnabled
 
-    if ret.cruiseState.enabled:
-      if self.disable_mads:
-        if self.CP.carFingerprint in FEATURES["use_lfa_button"]:
-          self.lfaEnabled = True
-        elif self.CP.carFingerprint not in FEATURES["use_lfa_button"]:
-          self.accMainEnabled = True
+    #if ret.cruiseState.enabled:
+    #  if self.disable_mads:
+    #    if self.CP.carFingerprint in FEATURES["use_lfa_button"]:
+    #      self.lfaEnabled = True
+    #    elif self.CP.carFingerprint not in FEATURES["use_lfa_button"]:
+    #      self.accMainEnabled = True
 
-    if ret.cruiseState.enabled:
-      self.resumeAvailable = True
+    #if ret.cruiseState.enabled:
+    #  self.resumeAvailable = True
 
     ret.steerWarning = False
     if self.lfaEnabled or self.accMainEnabled:
