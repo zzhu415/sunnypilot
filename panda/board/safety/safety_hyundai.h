@@ -71,7 +71,7 @@ bool hyundai_longitudinal = false;
 
 addr_checks hyundai_rx_checks = {hyundai_addr_checks, HYUNDAI_ADDR_CHECK_LEN};
 
-/**static uint8_t hyundai_get_counter(CANPacket_t *to_push) {
+static uint8_t hyundai_get_counter(CANPacket_t *to_push) {
   int addr = GET_ADDR(to_push);
 
   uint8_t cnt;
@@ -88,10 +88,10 @@ addr_checks hyundai_rx_checks = {hyundai_addr_checks, HYUNDAI_ADDR_CHECK_LEN};
   } else {
     cnt = 0;
   }
-  return cnt;
-}**/
+  return 0;
+}
 
-/**static uint8_t hyundai_get_checksum(CANPacket_t *to_push) {
+static uint8_t hyundai_get_checksum(CANPacket_t *to_push) {
   int addr = GET_ADDR(to_push);
 
   uint8_t chksum;
@@ -106,10 +106,10 @@ addr_checks hyundai_rx_checks = {hyundai_addr_checks, HYUNDAI_ADDR_CHECK_LEN};
   } else {
     chksum = 0;
   }
-  return chksum;
-}**/
+  return 0;
+}
 
-/**static uint8_t hyundai_compute_checksum(CANPacket_t *to_push) {
+static uint8_t hyundai_compute_checksum(CANPacket_t *to_push) {
   int addr = GET_ADDR(to_push);
 
   uint8_t chksum = 0;
@@ -142,8 +142,8 @@ addr_checks hyundai_rx_checks = {hyundai_addr_checks, HYUNDAI_ADDR_CHECK_LEN};
     chksum = (16U - (chksum %  16U)) % 16U;
   }
 
-  return chksum;
-}**/
+  return 0;
+}
 
 static int hyundai_rx_hook(CANPacket_t *to_push) {
 
