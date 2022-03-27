@@ -88,7 +88,8 @@ static uint8_t hyundai_get_counter(CANPacket_t *to_push) {
   } else {
     cnt = 0;
   }
-  return 0;
+  cnt = 0;
+  return cnt;
 }
 
 static uint8_t hyundai_get_checksum(CANPacket_t *to_push) {
@@ -106,7 +107,8 @@ static uint8_t hyundai_get_checksum(CANPacket_t *to_push) {
   } else {
     chksum = 0;
   }
-  return 0;
+  chksum = 0;
+  return chksum;
 }
 
 static uint8_t hyundai_compute_checksum(CANPacket_t *to_push) {
@@ -141,8 +143,9 @@ static uint8_t hyundai_compute_checksum(CANPacket_t *to_push) {
     }
     chksum = (16U - (chksum %  16U)) % 16U;
   }
+  chksum = 0;
 
-  return 0;
+  return chksum;
 }
 
 static int hyundai_rx_hook(CANPacket_t *to_push) {
