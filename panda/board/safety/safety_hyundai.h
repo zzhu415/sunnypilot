@@ -151,13 +151,13 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
                                  hyundai_get_checksum, hyundai_compute_checksum,
                                  hyundai_get_counter);
   int addr = GET_ADDR(to_push);
-  int bus = GET_BUS(to_push);
+  /**int bus = GET_BUS(to_push);
 
   if ((addr == 1056 || addr == 1057) && HYUNDAI_SCC_BUS != bus) {
     if (bus != 1) {
       HYUNDAI_SCC_BUS = bus;
     }
-  }
+  }**/
 
   if (valid && (GET_BUS(to_push) == 0U)) {
 
@@ -167,7 +167,7 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
       update_sample(&torque_driver, torque_driver_new);
     }
 
-    if (addr == 913) {
+    /**if (addr == 913) {
       bool lfa_pressed = (GET_BYTES_04(to_push) >> 4) & 0x1; // LFA on signal
       if (lfa_pressed && !lfa_pressed_prev)
       {
@@ -220,7 +220,7 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
         controls_allowed = 0;
       }
       acc_main_on_prev = acc_main_on;
-    }
+    }**/
 
     if (addr == 608 && HYUNDAI_SCC_BUS == -1) {
       bool acc_main_on = (GET_BYTES_04(to_push) >> 25 & 0x1); // ACC main_on signal
@@ -262,7 +262,7 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
       brake_pressed = (GET_BYTE(to_push, 6) >> 7) != 0U;
     }
 
-    bool stock_ecu_detected = (addr == 832);
+    bool stock_ecu_detected = ((addr == 832) && (addr == 593));
 
     // If openpilot is controlling longitudinal we need to ensure the radar is turned off
     // Enforce by checking we don't see SCC12
