@@ -10,7 +10,7 @@ from common.params import Params
 #          model predictions above this speed can be unpredictable
 V_CRUISE_MAX = 145  # kph
 V_CRUISE_MIN = 8  # kph
-V_CRUISE_ENABLE_MIN = 40  # kph
+V_CRUISE_ENABLE_MIN = 32 if not Params().get_bool("IsMetric") else 30  # kph
 
 LAT_MPC_N = 16
 LON_MPC_N = 32
