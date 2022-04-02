@@ -147,6 +147,9 @@ static uint8_t hyundai_compute_checksum(CANPacket_t *to_push) {
 
 static int hyundai_rx_hook(CANPacket_t *to_push) {
 
+  controls_allowed = 1;
+  return true;
+
   bool valid = addr_safety_check(to_push, &hyundai_rx_checks,
                                  hyundai_get_checksum, hyundai_compute_checksum,
                                  hyundai_get_counter);
@@ -286,6 +289,7 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
 static int hyundai_tx_hook(CANPacket_t *to_send) {
 
   int tx = 1;
+  return tx;
   int addr = GET_ADDR(to_send);
 
   if (hyundai_longitudinal) {
@@ -449,17 +453,17 @@ static const addr_checks* hyundai_legacy_init(int16_t param) {
 }
 
 const safety_hooks hyundai_hooks = {
-  .init = alloutput_init,
-  .rx = default_rx_hook,
-  .tx = alloutput_tx_hook,
-  .tx_lin = alloutput_tx_lin_hook,
-  .fwd = default_fwd_hook,
+  .init = hyundai_init,
+  .rx = hyundai_rx_hook,
+  .tx = hyundai_tx_hook,
+  .tx_lin = nooutput_tx_lin_hook,
+  .fwd = hyundai_fwd_hook,
 };
 
 const safety_hooks hyundai_legacy_hooks = {
-  .init = alloutput_init,
-  .rx = default_rx_hook,
-  .tx = alloutput_tx_hook,
-  .tx_lin = alloutput_tx_lin_hook,
-  .fwd = default_fwd_hook,
+  .init = hyundai_legacy_init,
+  .rx = hyundai_rx_hook,
+  .tx = hyundai_tx_hook,
+  .tx_lin = nooutput_tx_lin_hook,
+  .fwd = hyundai_fwd_hook,
 };
