@@ -16,7 +16,7 @@ LongCtrlState = car.CarControl.Actuators.LongControlState
 SpeedLimitControlState = log.LongitudinalPlan.SpeedLimitControlState
 
 STEER_FAULT_MAX_SPEED = 32 if not Params().get_bool("IsMetric") else 51
-STEER_FAULT_MAX_FRAMES = 50
+STEER_FAULT_MAX_FRAMES = 10
 
 def process_hud_alert(enabled, fingerprint, visual_alert, left_lane,
                       right_lane, left_lane_depart, right_lane_depart):
