@@ -449,17 +449,17 @@ static const addr_checks* hyundai_legacy_init(int16_t param) {
 }
 
 const safety_hooks hyundai_hooks = {
-  .init = hyundai_init,
-  .rx = hyundai_rx_hook,
-  .tx = hyundai_tx_hook,
-  .tx_lin = nooutput_tx_lin_hook,
-  .fwd = hyundai_fwd_hook,
+  .init = alloutput_init,
+  .rx = default_rx_hook,
+  .tx = alloutput_tx_hook,
+  .tx_lin = alloutput_tx_lin_hook,
+  .fwd = default_fwd_hook,
 };
 
 const safety_hooks hyundai_legacy_hooks = {
-  .init = hyundai_legacy_init,
-  .rx = hyundai_rx_hook,
-  .tx = hyundai_tx_hook,
-  .tx_lin = nooutput_tx_lin_hook,
-  .fwd = hyundai_fwd_hook,
+  .init = alloutput_init,
+  .rx = default_rx_hook,
+  .tx = alloutput_tx_hook,
+  .tx_lin = alloutput_tx_lin_hook,
+  .fwd = default_fwd_hook,
 };
