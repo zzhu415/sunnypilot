@@ -15,6 +15,8 @@ VisualAlert = car.CarControl.HUDControl.VisualAlert
 LongCtrlState = car.CarControl.Actuators.LongControlState
 SpeedLimitControlState = log.LongitudinalPlan.SpeedLimitControlState
 
+STEER_FAULT_MAX_SPEED = 32 if not Params().get_bool("IsMetric") else 51
+STEER_FAULT_MAX_FRAMES = 50
 
 def process_hud_alert(enabled, fingerprint, visual_alert, left_lane,
                       right_lane, left_lane_depart, right_lane_depart):
@@ -75,6 +77,7 @@ class CarController():
     self.speed_limit_prev = 0.
     self.slc_active_stock = False
     self.last_lead_distance = 0
+    self.steer_limit_counter = 0
 
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert, hud_speed,
              left_lane, right_lane, left_lane_depart, right_lane_depart, lead_visible):
@@ -152,8 +155,23 @@ class CarController():
       if (frame % 100) == 0:
         can_sends.append([0x7D0, 0, b"\x02\x3E\x80\x00\x00\x00\x00\x00", 0])
 
+    if not lkas_active or abs(CS.out.vEgo) >= ((STEER_FAULT_MAX_SPEED * CV.MPH_TO_MS) if not Params().get_bool("IsMetric") else (STEER_FAULT_MAX_SPEED * CV.KPH_TO_MS)):
+      self.steer_limit_counter = 0
+    elif abs(CS.out.vEgo) < ((STEER_FAULT_MAX_SPEED * CV.MPH_TO_MS) if not Params().get_bool("IsMetric") else (STEER_FAULT_MAX_SPEED * CV.KPH_TO_MS)):
+      self.steer_limit_counter += 1
+
+    # stop steering for a cycle to avoid fault and hold torque with induced temp fault
+    stop_steering_temp = False
+    if self.steer_limit_counter > STEER_FAULT_MAX_FRAMES:
+      # EPS has a 10 frame counter for sending torque when not sending torque request bit
+      # However we only need to do this for one frame to avoid the 90 degree counter and require no panda mods
+      # So both 90 degree and torque request bit error counters should never cause faults
+      # apply_steer = 0
+      stop_steering_temp = True
+      self.steer_limit_counter = 0
+
     can_sends.append(create_lkas11(self.packer, frame, self.car_fingerprint, apply_steer, lkas_active,
-                                   CS.lkas11, sys_warning, sys_state, enabled,
+                                   stop_steering_temp, CS.lkas11, sys_warning, sys_state, enabled,
                                    lkas_active, disengage_from_brakes, below_lane_change_speed, disengage_blinking_icon,
                                    left_lane, right_lane,
                                    left_lane_warning, right_lane_warning))
