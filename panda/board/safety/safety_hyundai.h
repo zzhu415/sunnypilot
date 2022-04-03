@@ -159,7 +159,7 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
     }
   }**/
 
-  if (valid && (GET_BUS(to_push) == 0U)) {
+  if (valid) {
 
     if (addr == 593) {
       int torque_driver_new = ((GET_BYTES_04(to_push) & 0x7ffU) * 0.79) - 808; // scale down new driver torque signal to match previous one
@@ -271,7 +271,7 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
       brake_pressed = (GET_BYTE(to_push, 6) >> 7) != 0U;
     }
 
-    bool stock_ecu_detected = ((addr == 832) && (addr == 909));
+    bool stock_ecu_detected = ((GET_BUS(to_push) == 0U) && (addr == 832) && (addr == 909));
 
     // If openpilot is controlling longitudinal we need to ensure the radar is turned off
     // Enforce by checking we don't see SCC12
