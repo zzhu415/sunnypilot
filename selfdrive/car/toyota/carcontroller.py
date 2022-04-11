@@ -154,7 +154,7 @@ class CarController():
           self.has_set_lkas = True
 
       if (frame % 100 == 0 or send_ui):
-        if not self.has_set_lkas and CS.CP.carFingerprint in FEATURES["use_lta_msg"]:
+        if not self.has_set_lkas:
           can_sends.append(create_ui_command_disable_startup_lkas(self.packer, use_lta_msg))
 
     if (frame % 100 == 0 or send_ui):
