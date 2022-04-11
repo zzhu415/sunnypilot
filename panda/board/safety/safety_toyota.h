@@ -75,7 +75,7 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
   {
     int addr = GET_ADDR(to_push);
     if ((addr == 0x412) && !toyota_mads_lta_msg) {
-      bool set_me = (GET_BYTE(to_push, 0) & 0x80) > 0; // LKAS_HUD
+      bool set_me = (GET_BYTE(to_push, 0) & 0xC0) > 0; // LKAS_HUD
       if(set_me && !set_me_prev)
       {
         controls_allowed = 1;
