@@ -118,7 +118,7 @@ class CarState(CarStateBase):
       elif self.lkas_on_startup == 1 and not self.init_car_start_lkas:
         self.car_start_lkas = True
         self.init_car_start_lkas = True
-      self.lkas_enabled = cp_cam.vl["LKAS_HUD"]["SET_ME_X01"]
+      self.lkas_enabled = cp_cam.vl["LKAS_HUD"]["SET_ME_X01"] != 0
       self.persistLkasIconDisabled = cp_cam.vl["LKAS_HUD"]["SET_ME_X01"] == 0
 
     if self.prev_lkas_enabled is None:
