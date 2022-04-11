@@ -76,13 +76,13 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
     int addr = GET_ADDR(to_push);
     if ((addr == 0x412) && !toyota_mads_lta_msg) {
       bool set_me = (GET_BYTE(to_push, 0) & 0xC0) > 0; // LKAS_HUD
-      int lkas_on_startup = (GET_BYTE(to_push, 0) & 0xC0);
+      bool lkas_on_startup = (GET_BYTE(to_push, 0) & 0xC0) > 0;
       bool init_car_start_lkas = false;
       bool car_start_lkas = false;
-      if ((lkas_on_startup == 0) && !init_car_start_lkas) {
+      if ((!lkas_on_startup) && !init_car_start_lkas) {
         car_start_lkas = false;
         init_car_start_lkas = true;
-      } else if ((lkas_on_startup == 1) && !init_car_start_lkas) {
+      } else if ((lkas_on_startup) && !init_car_start_lkas) {
         car_start_lkas = true;
         init_car_start_lkas = true;
         set_me_prev = true;
