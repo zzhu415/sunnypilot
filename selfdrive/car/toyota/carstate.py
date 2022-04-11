@@ -46,6 +46,9 @@ class CarState(CarStateBase):
 
     self.cruiseState_standstill = False
 
+    self.car_start_lkas = False
+    self.init_car_start_lkas = False
+
   def update(self, cp, cp_cam):
     ret = car.CarState.new_message()
 
@@ -108,6 +111,13 @@ class CarState(CarStateBase):
       self.lkas_enabled = cp_cam.vl["LKAS_HUD"]["LDA_ON_MESSAGE"]
       self.persistLkasIconDisabled = cp_cam.vl["LKAS_HUD"]["SET_ME_X01"] == 1
     else:
+      self.lkas_on_startup = cp_cam.vl["LKAS_HUD"]["SET_ME_X01"]
+      if self.lkas_on_startup == 0 and not self.init_car_start_lkas:
+        self.car_start_lkas = False
+        self.init_car_start_lkas = True
+      elif self.lkas_on_startup == 1 and not self.init_car_start_lkas:
+        self.car_start_lkas = True
+        self.init_car_start_lkas = True
       self.lkas_enabled = cp_cam.vl["LKAS_HUD"]["SET_ME_X01"]
       self.persistLkasIconDisabled = cp_cam.vl["LKAS_HUD"]["SET_ME_X01"] == 0
 
@@ -163,10 +173,16 @@ class CarState(CarStateBase):
           elif self.prev_lkas_enabled != 2 and self.lkas_enabled == 2:
             self.lkasEnabled = False
         else:
-          if not self.prev_lkas_enabled and self.lkas_enabled: #1 == not LKAS button
-            self.lkasEnabled = True
-          elif self.prev_lkas_enabled == 1 and not self.lkas_enabled:
-            self.lkasEnabled = False
+          if not self.car_start_lkas:
+            if not self.prev_lkas_enabled and self.lkas_enabled: #1 == not LKAS button
+              self.lkasEnabled = True
+            elif self.prev_lkas_enabled and not self.lkas_enabled:
+              self.lkasEnabled = False
+          elif self.car_start_lkas:
+            if self.prev_lkas_enabled and not self.lkas_enabled: #1 == not LKAS button
+              self.lkasEnabled = True
+            elif not self.prev_lkas_enabled and self.lkas_enabled:
+              self.lkasEnabled = False
         if self.acc_mads_combo:
           if not self.prev_acc_mads_combo and ret.cruiseState.enabled:
             self.lkasEnabled = True
