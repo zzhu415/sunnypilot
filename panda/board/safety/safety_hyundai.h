@@ -367,7 +367,7 @@ static int hyundai_fwd_hook(int bus_num, CANPacket_t *to_fwd) {
   int addr = GET_ADDR(to_fwd);
 
   // forward cam to ccan and viceversa, except lkas cmd
-  if ((bus_num == 0) && (addr != 1265)) {
+  if (bus_num == 0) {
     bus_fwd = 2;
   }
   if ((bus_num == 2) && (addr != 832) && (addr != 1157)) {
