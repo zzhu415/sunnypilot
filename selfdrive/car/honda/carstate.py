@@ -114,8 +114,9 @@ def get_can_signals(CP, gearbox_msg, main_on_sig_msg):
       checks += [("CRUISE_PARAMS", 50)]
 
   if CP.carFingerprint in (CAR.ACCORD, CAR.ACCORDH, CAR.INSIGHT):
-    signals += [("DRIVERS_DOOR_OPEN", "SCM_FEEDBACK", 1),
-                ("LEAD_DISTANCE", "RADAR_HUD", 0)]
+    signals += [("DRIVERS_DOOR_OPEN", "SCM_FEEDBACK", 1)]
+    if not CP.openpilotLongitudinalControl:
+      signals += [("LEAD_DISTANCE", "RADAR_HUD", 0)]
     checks += [("RADAR_HUD", 50)]
   elif CP.carFingerprint in (CAR.CIVIC_BOSCH, CAR.CIVIC_BOSCH_DIESEL, CAR.CRV_HYBRID,  CAR.ACURA_RDX_3G, CAR.HONDA_E):
     signals += [("DRIVERS_DOOR_OPEN", "SCM_FEEDBACK", 1)]
@@ -224,7 +225,8 @@ class CarState(CarStateBase):
     if self.CP.carFingerprint in (CAR.ACCORD, CAR.ACCORDH, CAR.INSIGHT):
       ret.standstill = cp.vl["ENGINE_DATA"]["XMISSION_SPEED"] < 0.1
       ret.doorOpen = bool(cp.vl["SCM_FEEDBACK"]["DRIVERS_DOOR_OPEN"])
-      self.lead_distance = cp.vl["RADAR_HUD"]['LEAD_DISTANCE']
+      if not self.CP.openpilotLongitudinalControl:
+        self.lead_distance = cp.vl["RADAR_HUD"]['LEAD_DISTANCE']
     elif self.CP.carFingerprint in (CAR.CIVIC_BOSCH, CAR.CIVIC_BOSCH_DIESEL, CAR.CRV_HYBRID,  CAR.ACURA_RDX_3G, CAR.HONDA_E):
       ret.standstill = cp.vl["ENGINE_DATA"]['XMISSION_SPEED'] < 0.1
       ret.doorOpen = bool(cp.vl["SCM_FEEDBACK"]['DRIVERS_DOOR_OPEN'])
