@@ -82,7 +82,6 @@ def get_can_signals(CP, gearbox_msg, main_on_sig_msg):
     signals += [
       ("EPB_STATE", "EPB_STATUS", 0),
       ("IMPERIAL_UNIT", "CAR_SPEED", 1),
-      ("BRAKE_LIGHTS", "ACC_CONTROL", 0),
     ]
     checks += [
       ("EPB_STATUS", 50),
@@ -95,6 +94,7 @@ def get_can_signals(CP, gearbox_msg, main_on_sig_msg):
         ("CRUISE_SPEED", "ACC_HUD", 0),
         ("ACCEL_COMMAND", "ACC_CONTROL", 0),
         ("AEB_STATUS", "ACC_CONTROL", 0),
+        ("BRAKE_LIGHTS", "ACC_CONTROL", 0),
       ]
       if CP.carFingerprint in (CAR.CIVIC_BOSCH, CAR.CRV_HYBRID):
         signals += [
@@ -102,10 +102,8 @@ def get_can_signals(CP, gearbox_msg, main_on_sig_msg):
         ]
       checks += [
         ("ACC_HUD", 10),
+        ("ACC_CONTROL", 50),
       ]
-    checks += [
-      ("ACC_CONTROL", 50),
-    ]
   else:  # Nidec signals
     signals += [("CRUISE_SPEED_PCM", "CRUISE", 0),
                 ("CRUISE_SPEED_OFFSET", "CRUISE_PARAMS", 0)]
@@ -355,7 +353,8 @@ class CarState(CarStateBase):
         ret.brakePressed = True
 
     if self.CP.carFingerprint in HONDA_BOSCH:
-      ret.brakeLights = bool(ret.brakePressed or cp.vl["ACC_CONTROL"]['BRAKE_LIGHTS'] != 0 or ret.brake > 0.4)
+      ret.brakeLights = bool(ret.brakePressed or cp.vl["ACC_CONTROL"]['BRAKE_LIGHTS'] != 0 or ret.brake > 0.4) if not self.CP.openpilotLongitudinalControl else \
+                         bool(ret.brakePressed or ret.brake > 0.4)
     else:
       ret.brakeLights = bool(ret.brakePressed)
 
