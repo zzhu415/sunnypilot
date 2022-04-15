@@ -283,9 +283,9 @@ class CarState(CarStateBase):
       if self.gap_adjust_cruise:
         if self.prev_cruise_setting != 3: # DISTANCE_ADJ
           if self.cruise_setting == 3:
-            self.gap_adjust_cruise_tr += 1
-            if self.gap_adjust_cruise_tr > 3:
-              self.gap_adjust_cruise_tr = 0
+            self.gap_adjust_cruise_tr -= 1
+            if self.gap_adjust_cruise_tr < 0:
+              self.gap_adjust_cruise_tr = 3
             Params().put("GapAdjustCruiseTr", str(self.gap_adjust_cruise_tr))
       else:
         self.gap_adjust_cruise_tr = 3

@@ -255,9 +255,9 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QString initGacBtn = "";
   gacBtn = new QPushButton(initGacBtn);
   QObject::connect(gacBtn, &QPushButton::clicked, [=]() {
-    QUIState::ui_state.scene.gap_adjust_cruise_tr = QUIState::ui_state.scene.gap_adjust_cruise_tr + 1;
-    if (QUIState::ui_state.scene.gap_adjust_cruise_tr > 3) {
-      QUIState::ui_state.scene.gap_adjust_cruise_tr = 0;
+    QUIState::ui_state.scene.gap_adjust_cruise_tr = QUIState::ui_state.scene.gap_adjust_cruise_tr - 1;
+    if (QUIState::ui_state.scene.gap_adjust_cruise_tr < 0) {
+      QUIState::ui_state.scene.gap_adjust_cruise_tr = 3;
     }
     if (QUIState::ui_state.scene.gap_adjust_cruise_tr == 3) {
       Params().put("GapAdjustCruiseTr", "3", 1);
