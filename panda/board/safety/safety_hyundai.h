@@ -361,19 +361,6 @@ static int hyundai_tx_hook(CANPacket_t *to_send) {
   return tx;
 }
 
-static void send_mdps_enable_speed(CAN_FIFOMailBox_TypeDef *to_fwd){
-  bool is_speed_unit_mph = GET_BYTE(to_fwd, 2) & 0x2;
-
-  int mdps_cutoff_speed = is_speed_unit_mph ? 76 : 120;  // factor of 2 from dbc
-
-  int veh_clu_speed = GET_BYTE(to_fwd, 1) | (GET_BYTE(to_fwd, 2) & 0x1) << 8;
-
-  if (veh_clu_speed < mdps_cutoff_speed) {
-    to_fwd->RDLR &= 0xFFFE00FF;
-    to_fwd->RDLR |= mdps_cutoff_speed << 8;
-  }
-};
-
 static int hyundai_fwd_hook(int bus_num, CANPacket_t *to_fwd) {
 
   int bus_fwd = -1;
@@ -382,9 +369,6 @@ static int hyundai_fwd_hook(int bus_num, CANPacket_t *to_fwd) {
   // forward cam to ccan and viceversa, except lkas cmd
   if (bus_num == 0) {
     bus_fwd = 2;
-    if (addr == 1265) {
-      send_mdps_enable_speed(to_fwd);
-    }
   }
   if ((bus_num == 2) && (addr != 832) && (addr != 1157)) {
     bus_fwd = 0;
