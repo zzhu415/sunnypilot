@@ -160,6 +160,12 @@ class CarController():
       if (frame % 100) == 0:
         can_sends.append([0x7D0, 0, b"\x02\x3E\x80\x00\x00\x00\x00\x00", 0])
 
+    enable_speed = 36 if not self.is_metric else 60
+    enable_speed_conv = enable_speed * (CV.MPH_TO_MS if not Params().get_bool("IsMetric") else CV.KPH_TO_MS)
+    low_speed_steer = True if enable_speed_conv < CS.out.vEgo else False
+    if lkas_active and low_speed_steer:
+      can_sends.append(create_clu11_low_speed_lockout(self.packer, frame, CS.clu11, LOW_SPEED_LOCKOUT))
+
     if lkas_active and abs(CS.out.steeringAngleDeg) > STEER_FAULT_MAX_ANGLE:
       self.angle_limit_counter += 1
     else:
@@ -184,13 +190,6 @@ class CarController():
                                    lkas_active, disengage_from_brakes, below_lane_change_speed, disengage_blinking_icon,
                                    left_lane, right_lane,
                                    left_lane_warning, right_lane_warning))
-
-    #enable_speed = 72 if not self.is_metric else 120
-    #enable_speed_conv = enable_speed * (CV.MPH_TO_MS if not Params().get_bool("IsMetric") else CV.KPH_TO_MS)
-    #low_speed_steer = True if enable_speed_conv < CS.out.vEgo else False
-    #if lkas_active and low_speed_steer:
-    if lkas_active:
-      can_sends.append(create_clu11_low_speed_lockout(self.packer, frame, CS.clu11, LOW_SPEED_LOCKOUT))
 
     if not CS.CP.openpilotLongitudinalControl:
       if pcm_cancel_cmd:
