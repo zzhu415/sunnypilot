@@ -15,7 +15,7 @@ VisualAlert = car.CarControl.HUDControl.VisualAlert
 LongCtrlState = car.CarControl.Actuators.LongControlState
 SpeedLimitControlState = log.LongitudinalPlan.SpeedLimitControlState
 
-LOW_SPEED_LOCKOUT = 254
+LOW_SPEED_LOCKOUT = 255
 
 def process_hud_alert(enabled, fingerprint, visual_alert, left_lane,
                       right_lane, left_lane_depart, right_lane_depart):
@@ -160,10 +160,11 @@ class CarController():
                                    left_lane, right_lane,
                                    left_lane_warning, right_lane_warning))
 
-    enable_speed = 72 if not self.is_metric else 120
-    enable_speed_conv = enable_speed * (CV.MPH_TO_MS if not Params().get_bool("IsMetric") else CV.KPH_TO_MS)
-    low_speed_steer = True if enable_speed_conv < CS.out.vEgo else False
-    if lkas_active and low_speed_steer:
+    #enable_speed = 72 if not self.is_metric else 120
+    #enable_speed_conv = enable_speed * (CV.MPH_TO_MS if not Params().get_bool("IsMetric") else CV.KPH_TO_MS)
+    #low_speed_steer = True if enable_speed_conv < CS.out.vEgo else False
+    #if lkas_active and low_speed_steer:
+    if lkas_active:
       can_sends.append(create_clu11_low_speed_lockout(self.packer, frame, CS.clu11, LOW_SPEED_LOCKOUT))
 
     if not CS.CP.openpilotLongitudinalControl:
