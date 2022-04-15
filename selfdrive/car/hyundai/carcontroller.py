@@ -164,8 +164,8 @@ class CarController():
     #enable_speed_conv = enable_speed * (CV.MPH_TO_MS if not Params().get_bool("IsMetric") else CV.KPH_TO_MS)
     #low_speed_steer = True if enable_speed_conv < CS.out.vEgo else False
     #if lkas_active and low_speed_steer:
-    if lkas_active:
-      can_sends.append(create_clu11_low_speed_lockout(self.packer, frame, CS.clu11, LOW_SPEED_LOCKOUT))
+    #if lkas_active:
+    #  can_sends.append(create_clu11_low_speed_lockout(self.packer, frame, CS.clu11, LOW_SPEED_LOCKOUT))
 
     if not CS.CP.openpilotLongitudinalControl:
       if pcm_cancel_cmd:
