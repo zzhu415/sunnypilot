@@ -117,7 +117,7 @@ def get_can_signals(CP, gearbox_msg, main_on_sig_msg):
     signals += [("DRIVERS_DOOR_OPEN", "SCM_FEEDBACK", 1)]
     if not CP.openpilotLongitudinalControl:
       signals += [("LEAD_DISTANCE", "RADAR_HUD", 0)]
-    checks += [("RADAR_HUD", 50)]
+      checks += [("RADAR_HUD", 50)]
   elif CP.carFingerprint in (CAR.CIVIC_BOSCH, CAR.CIVIC_BOSCH_DIESEL, CAR.CRV_HYBRID,  CAR.ACURA_RDX_3G, CAR.HONDA_E):
     signals += [("DRIVERS_DOOR_OPEN", "SCM_FEEDBACK", 1)]
     checks += [("RADAR_HUD", 50)]
