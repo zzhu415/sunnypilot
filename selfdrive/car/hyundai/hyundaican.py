@@ -71,21 +71,10 @@ def create_clu11(packer, frame, clu11, button):
   return packer.make_can_msg("CLU11", 0, values)
 
 
-def create_clu11_low_speed_lockout(packer, clu11, speed):
+def create_clu11_low_speed_lockout(packer, frame, clu11, speed):
   values = clu11
-  values["CF_Clu_CruiseSwState"] = 7
-  values["CF_Clu_CruiseSwMain"] = 1
-  values["CF_Clu_SldMainSW"] = 1
-  values["CF_Clu_ParityBit1"] = 1
-  values["CF_Clu_VanzDecimal"] = 0.375
   values["CF_Clu_Vanz"] = speed
-  values["CF_Clu_SPEED_UNIT"] = 1
-  values["CF_Clu_DetentOut"] = 1
-  values["CF_Clu_RheostatLevel"] = 31
-  values["CF_Clu_CluInfo"] = 1
-  values["CF_Clu_AmpInfo"] = 1
-  values["CF_Clu_NewSignal1"] = 3
-  values["CF_Clu_AliveCnt1"] = 15
+  values["CF_Clu_AliveCnt1"] = frame % 0x10
   return packer.make_can_msg("CLU11", 0, values)
 
 
