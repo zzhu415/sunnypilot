@@ -85,7 +85,7 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
 
   Params params;
 
-  if (!params.getBool("DisableRadar_Allow")) {
+  if (params.getBool("DisableRadar_Allow")) {
     toggles.push_back({
       "DisableRadar",
       "openpilot Longitudinal Control",
