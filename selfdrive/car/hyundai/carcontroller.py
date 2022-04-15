@@ -17,6 +17,9 @@ SpeedLimitControlState = log.LongitudinalPlan.SpeedLimitControlState
 
 LOW_SPEED_LOCKOUT = 255
 
+STEER_FAULT_MAX_ANGLE = 85  # EPS max is 90
+STEER_FAULT_MAX_FRAMES = 90  # EPS counter is 95
+
 def process_hud_alert(enabled, fingerprint, visual_alert, left_lane,
                       right_lane, left_lane_depart, right_lane_depart):
   sys_warning = (visual_alert in [VisualAlert.steerRequired, VisualAlert.ldw])
@@ -77,6 +80,9 @@ class CarController():
     self.slc_active_stock = False
     self.last_lead_distance = 0
     self.is_metric = Params().get_bool("IsMetric")
+    self.angle_limit_counter = 0
+    self.cut_steer_frames = 0
+    self.cut_steer = False
 
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert, hud_speed,
              left_lane, right_lane, left_lane_depart, right_lane_depart, lead_visible):
@@ -154,8 +160,27 @@ class CarController():
       if (frame % 100) == 0:
         can_sends.append([0x7D0, 0, b"\x02\x3E\x80\x00\x00\x00\x00\x00", 0])
 
+    if lkas_active and abs(CS.out.steeringAngleDeg) > STEER_FAULT_MAX_ANGLE:
+      self.angle_limit_counter += 1
+    else:
+      self.angle_limit_counter = 0
+
+    # stop requesting torque to avoid 90 degree fault and hold torque with induced temporary fault
+    # two cycles avoids race conditions every few minutes
+    if self.angle_limit_counter > STEER_FAULT_MAX_FRAMES:
+      self.cut_steer = True
+    elif self.cut_steer_frames > 1:
+      self.cut_steer_frames = 0
+      self.cut_steer = False
+
+    cut_steer_temp = False
+    if self.cut_steer:
+      cut_steer_temp = True
+      self.angle_limit_counter = 0
+      self.cut_steer_frames += 1
+
     can_sends.append(create_lkas11(self.packer, frame, self.car_fingerprint, apply_steer, lkas_active,
-                                   CS.lkas11, sys_warning, sys_state, enabled,
+                                   cut_steer_temp, CS.lkas11, sys_warning, sys_state, enabled,
                                    lkas_active, disengage_from_brakes, below_lane_change_speed, disengage_blinking_icon,
                                    left_lane, right_lane,
                                    left_lane_warning, right_lane_warning))
