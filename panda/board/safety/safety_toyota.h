@@ -278,10 +278,9 @@ static const addr_checks* toyota_init(int16_t param) {
   controls_allowed = 0;
   relay_malfunction_reset();
 
-  toyota_mads_lta_msg = GET_FLAG(param, TOYOTA_PARAM_MADS_LTA_MSG);
-
   gas_interceptor_detected = 0;
   toyota_dbc_eps_torque_factor = param;
+  toyota_mads_lta_msg = GET_FLAG(param, TOYOTA_PARAM_MADS_LTA_MSG);
   return &toyota_rx_checks;
 }
 
