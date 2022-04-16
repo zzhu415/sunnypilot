@@ -311,8 +311,8 @@ void ButtonsWindow::updateState(const UIState &s) {
     }
   }
 
-  if (prev_gap_adjust_cruise_tr != gapAdjustCruiseTr) {
-    prev_gap_adjust_cruise_tr = gapAdjustCruiseTr;
+  if ((prev_gap_adjust_cruise_tr != QUIState::ui_state.scene.gap_adjust_cruise_tr) || (prev_gap_adjust_cruise_tr != gapAdjustCruiseTr)) {
+    prev_gap_adjust_cruise_tr = QUIState::ui_state.scene.gap_adjust_cruise_tr;
     if (QUIState::ui_state.scene.gap_adjust_cruise_tr == 3 || gapAdjustCruiseTr == 3) {
       gacBtn->setStyleSheet(QString("font-size: 45px; border-radius: 100px; border-color: %1").arg(gacBtnColors.at(3)));
       gacBtn->setText("Far\nGap");
