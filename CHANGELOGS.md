@@ -1,3 +1,7 @@
+sunnypilot - Version 0.8.12-4 (2022-04-18)
+========================
+* HOTFIX🛠: Fix internet check hanging after boot
+
 sunnypilot - Version 0.8.12-4 (2022-04-08)
 ========================
 * NEW❗: Enable M.A.D.S with LKAS button on the steering wheel
