@@ -287,7 +287,7 @@ class CarController():
       if not CS.out.cruiseState.standstill and (enabled and CS.acc_active):
         cruise_button = self.get_cruise_buttons(CS)
         if cruise_button is not None:
-          can_sends.append(hondacan.spam_buttons_command(self.packer, cruise_button, (frame + self.resume_count) // 2, CS.CP.carFingerprint))
+          can_sends.append(hondacan.spam_buttons_command(self.packer, cruise_button, (self.resume_count // 2), CS.CP.carFingerprint))
           self.resume_count += 1
         else:
           self.resume_count = 0
