@@ -105,6 +105,18 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     localizerMalfunction @103;
     highCpuUsage @105;
     cruiseMismatch @106;
+    manualSteeringRequired @107;
+    manualLongitudinalRequired @108;
+    silentPedalPressed @109;
+    silentButtonEnable @110;
+    silentBrakeHold @111;
+    silentWrongGear @112;
+    preKeepHandsOnWheel @113;
+    promptKeepHandsOnWheel @114;
+    keepHandsOnWheel @115;
+    speedLimitActive @116;
+    speedLimitValueChange @117;
+    standStill @118;
 
     driverMonitorLowAccDEPRECATED @68;
     radarCanErrorDEPRECATED @15;
@@ -187,6 +199,20 @@ struct CarState {
   # clutch (manual transmission only)
   clutchPressed @28 :Bool;
 
+  lfaEnabled @39 :Bool;
+  accMainEnabled @40 :Bool;
+  lkasEnabled @41 :Bool;
+  leftBlinkerOn @42 :Bool;
+  rightBlinkerOn @43 :Bool;
+  disengageByBrake @44 :Bool;
+  automaticLaneChange @45 :Bool;
+  belowLaneChangeSpeed @46 :Bool;
+  accEnabled @47 :Bool;
+  engineRPM @48 :Float32;
+  standStill @49 :Bool;
+  cruiseButtons @50 :UInt32;
+  radarObjValid @51 :Bool;
+
   # which packets this state came from
   canMonoTimes @12: List(UInt64);
 
@@ -209,6 +235,7 @@ struct CarState {
     speedOffset @3 :Float32;
     standstill @4 :Bool;
     nonAdaptive @5 :Bool;
+    speedLimit @6 :Float32;
   }
 
   enum GearShifter {
@@ -246,7 +273,7 @@ struct CarState {
   }
 
   errorsDEPRECATED @0 :List(CarEvent.EventName);
-  brakeLightsDEPRECATED @19 :Bool;
+  brakeLights @19 :Bool;
 }
 
 # ******* radar state @ 20hz *******
@@ -290,7 +317,14 @@ struct CarControl {
   enabled @0 :Bool;
   active @7 :Bool;
 
+  # Actuator commands as computed by controlsd
   actuators @6 :Actuators;
+
+  # Any car specific rate limits or quirks applied by
+  # the CarController are reflected in actuatorsOutput
+  # and matches what is sent to the car
+  actuatorsOutput @10 :Actuators;
+
   roll @8 :Float32;
   pitch @9 :Float32;
 
@@ -299,12 +333,13 @@ struct CarControl {
 
   struct Actuators {
     # range from 0.0 - 1.0
-    gasDEPRECATED @0: Float32;
-    brakeDEPRECATED @1: Float32;
+    gas @0: Float32;
+    brake @1: Float32;
     # range from -1.0 - 1.0
     steer @2: Float32;
     steeringAngleDeg @3: Float32;
 
+    speed @6: Float32; # m/s
     accel @4: Float32; # m/s^2
     longControlState @5: LongControlState;
 
@@ -351,14 +386,17 @@ struct CarControl {
 
     enum AudibleAlert {
       none @0;
-      chimeEngage @1;
-      chimeDisengage @2;
-      chimeError @3;
-      chimeWarning1 @4; # unused
-      chimeWarningRepeat @5;
-      chimeWarningRepeatInfinite @6;
-      chimePrompt @7;
-      chimeWarning2RepeatInfinite @8;
+
+      engage @1;
+      disengage @2;
+      refuse @3;
+
+      warningSoft @4;
+      warningImmediate @5;
+
+      prompt @6;
+      promptRepeat @7;
+      promptDistracted @8;
     }
   }
 
@@ -379,14 +417,17 @@ struct CarParams {
   enableDsu @5 :Bool;        # driving support unit
   enableApgs @6 :Bool;       # advanced parking guidance system
   enableBsm @56 :Bool;       # blind spot monitoring
+  flags @64 :UInt32;         # flags for car specific quirks
+  standStill @65: Bool;
+  pcmCruiseSpeed @66 :Bool;  # is openpilot's state tied to the PCM's cruise speed?
 
   minEnableSpeed @7 :Float32;
   minSteerSpeed @8 :Float32;
   maxSteeringAngleDeg @54 :Float32;
   safetyConfigs @62 :List(SafetyConfig);
 
-  steerMaxBP @11 :List(Float32);
-  steerMaxV @12 :List(Float32);
+  steerMaxBPDEPRECATED @11 :List(Float32);
+  steerMaxVDEPRECATED @12 :List(Float32);
   gasMaxBPDEPRECATED @13 :List(Float32);
   gasMaxVDEPRECATED @14 :List(Float32);
   brakeMaxBPDEPRECATED @15 :List(Float32);
@@ -410,6 +451,7 @@ struct CarParams {
     pid @26 :LateralPIDTuning;
     indi @27 :LateralINDITuning;
     lqr @40 :LateralLQRTuning;
+    torque @67 :LateralTorqueTuning;
   }
 
   steerLimitAlert @28 :Bool;
@@ -442,6 +484,8 @@ struct CarParams {
   fingerprintSource @49: FingerprintSource;
   networkLocation @50 :NetworkLocation;  # Where Panda/C2 is integrated into the car's CAN network
 
+  wheelSpeedFactor @63 :Float32; # Multiplier on wheels speeds to computer actual speeds
+
   struct SafetyConfig {
     safetyModel @0 :SafetyModel;
     safetyParam @1 :Int16;
@@ -458,6 +502,16 @@ struct CarParams {
     kiBP @2 :List(Float32);
     kiV @3 :List(Float32);
     kf @4 :Float32;
+    kdBP @5 :List(Float32) = [0.];
+    kdV @6 :List(Float32) = [0.];
+  }
+
+  struct LateralTorqueTuning {
+    useSteeringAngle @0 :Bool;
+    kp @1 :Float32;
+    ki @2 :Float32;
+    friction @3 :Float32;
+    kf @4 :Float32;
   }
 
   struct LongitudinalPIDTuning {
@@ -465,8 +519,11 @@ struct CarParams {
     kpV @1 :List(Float32);
     kiBP @2 :List(Float32);
     kiV @3 :List(Float32);
+    kf @8 :Float32;
     deadzoneBP @4 :List(Float32);
     deadzoneV @5 :List(Float32);
+    kdBP @6 :List(Float32) = [0.];
+    kdV @7 :List(Float32) = [0.];
   }
 
   struct LateralINDITuning {
@@ -520,7 +577,7 @@ struct CarParams {
     allOutput @17;
     gmAscm @18;
     noOutput @19;  # like silent but without silent CAN TXs
-    hondaBoschHarness @20;
+    hondaBosch @20;
     volkswagenPq @21;
     subaruLegacy @22;  # pre-Global platform
     hyundaiLegacy @23;

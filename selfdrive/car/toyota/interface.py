@@ -36,7 +36,6 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 15.74   # unknown end-to-end spec
       tire_stiffness_factor = 0.6371   # hand-tune
       ret.mass = 3045. * CV.LB_TO_KG + STD_CARGO_KG
-
       set_lat_tune(ret.lateralTuning, LatTunes.INDI_PRIUS)
       ret.steerActuatorDelay = 0.3
 
@@ -46,7 +45,7 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 16.88   # 14.5 is spec end-to-end
       tire_stiffness_factor = 0.5533
       ret.mass = 3650. * CV.LB_TO_KG + STD_CARGO_KG  # mean between normal and hybrid
-      set_lat_tune(ret.lateralTuning, LatTunes.LQR_RAV4)
+      set_lat_tune(ret.lateralTuning, LatTunes.TORQUE, MAX_TORQUE=2.5, FRICTION=0.06)
 
     elif candidate == CAR.COROLLA:
       ret.safetyConfigs[0].safetyParam = 88
@@ -65,7 +64,6 @@ class CarInterface(CarInterfaceBase):
       ret.mass = 4387. * CV.LB_TO_KG + STD_CARGO_KG
       set_lat_tune(ret.lateralTuning, LatTunes.PID_B)
 
-
     elif candidate == CAR.LEXUS_RXH:
       stop_and_go = True
       ret.wheelbase = 2.79
@@ -81,6 +79,7 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.5533  # not optimized yet
       ret.mass = 4387. * CV.LB_TO_KG + STD_CARGO_KG
       set_lat_tune(ret.lateralTuning, LatTunes.PID_D)
+      ret.wheelSpeedFactor = 1.035
 
     elif candidate == CAR.LEXUS_RXH_TSS2:
       stop_and_go = True
@@ -89,6 +88,7 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.444  # not optimized yet
       ret.mass = 4481.0 * CV.LB_TO_KG + STD_CARGO_KG  # mean between min and max
       set_lat_tune(ret.lateralTuning, LatTunes.PID_E)
+      ret.wheelSpeedFactor = 1.035
 
     elif candidate in [CAR.CHR, CAR.CHRH]:
       stop_and_go = True
@@ -151,7 +151,7 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 13.9
       tire_stiffness_factor = 0.444  # not optimized yet
       ret.mass = 3060. * CV.LB_TO_KG + STD_CARGO_KG
-      set_lat_tune(ret.lateralTuning, LatTunes.PID_D)
+      set_lat_tune(ret.lateralTuning, LatTunes.TORQUE, MAX_TORQUE=3.0, FRICTION=0.08)
 
     elif candidate in [CAR.LEXUS_ES_TSS2, CAR.LEXUS_ESH_TSS2]:
       stop_and_go = True
@@ -186,6 +186,15 @@ class CarInterface(CarInterfaceBase):
       ret.mass = 3736.8 * CV.LB_TO_KG + STD_CARGO_KG
       set_lat_tune(ret.lateralTuning, LatTunes.PID_L)
 
+    elif candidate == CAR.LEXUS_RC:
+      ret.safetyConfigs[0].safetyParam = 77
+      stop_and_go = False
+      ret.wheelbase = 2.73050
+      ret.steerRatio = 13.3
+      tire_stiffness_factor = 0.444
+      ret.mass = 3736.8 * CV.LB_TO_KG + STD_CARGO_KG
+      set_lat_tune(ret.lateralTuning, LatTunes.PID_L)
+
     elif candidate == CAR.LEXUS_CTH:
       ret.safetyConfigs[0].safetyParam = 100
       stop_and_go = True
@@ -206,7 +215,7 @@ class CarInterface(CarInterfaceBase):
     elif candidate == CAR.PRIUS_TSS2:
       stop_and_go = True
       ret.wheelbase = 2.70002  # from toyota online sepc.
-      ret.steerRatio = 13.4   # True steerRation from older prius
+      ret.steerRatio = 13.4   # True steerRatio from older prius
       tire_stiffness_factor = 0.6371   # hand-tune
       ret.mass = 3115. * CV.LB_TO_KG + STD_CARGO_KG
       set_lat_tune(ret.lateralTuning, LatTunes.PID_N)
@@ -259,7 +268,8 @@ class CarInterface(CarInterfaceBase):
 
     if ret.enableGasInterceptor:
       set_long_tune(ret.longitudinalTuning, LongTunes.PEDAL)
-    elif candidate in [CAR.COROLLA_TSS2, CAR.COROLLAH_TSS2, CAR.RAV4_TSS2, CAR.RAV4H_TSS2, CAR.LEXUS_NX_TSS2]:
+    elif candidate in [CAR.COROLLA_TSS2, CAR.COROLLAH_TSS2, CAR.RAV4_TSS2, CAR.RAV4H_TSS2, CAR.LEXUS_NX_TSS2,
+                       CAR.HIGHLANDER_TSS2, CAR.HIGHLANDERH_TSS2, CAR.PRIUS_TSS2]:
       set_long_tune(ret.longitudinalTuning, LongTunes.TSS2)
       ret.stoppingDecelRate = 0.3  # reach stopping target smoothly
       ret.startingAccelRate = 6.0  # release brakes fast
@@ -301,12 +311,11 @@ class CarInterface(CarInterfaceBase):
   # pass in a car.CarControl
   # to be called @ 100hz
   def apply(self, c):
-
-    can_sends = self.CC.update(c.enabled, c.active, self.CS, self.frame,
-                               c.actuators, c.cruiseControl.cancel,
-                               c.hudControl.visualAlert, c.hudControl.leftLaneVisible,
-                               c.hudControl.rightLaneVisible, c.hudControl.leadVisible,
-                               c.hudControl.leftLaneDepart, c.hudControl.rightLaneDepart)
+    ret = self.CC.update(c.enabled, c.active, self.CS, self.frame,
+                         c.actuators, c.cruiseControl.cancel,
+                         c.hudControl.visualAlert, c.hudControl.leftLaneVisible,
+                         c.hudControl.rightLaneVisible, c.hudControl.leadVisible,
+                         c.hudControl.leftLaneDepart, c.hudControl.rightLaneDepart)
 
     self.frame += 1
-    return can_sends
+    return ret
