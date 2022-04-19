@@ -46,6 +46,8 @@ class CarState(CarStateBase):
 
     self.cruiseState_standstill = False
 
+    self.stop_start = False
+
   def update(self, cp, cp_cam, cp_body):
     ret = car.CarState.new_message()
 
@@ -98,6 +100,8 @@ class CarState(CarStateBase):
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
     ret.standstill = ret.vEgoRaw < 0.01
     ret.standStill = self.CP.standStill
+
+    self.stop_start = bool(cp.vl["STOP_START"]["State"])
 
     self.cruiseState_standstill = ret.cruiseState.standstill
 
@@ -372,11 +376,13 @@ class CarState(CarStateBase):
         ("UNITS", "Dashlights", 0),
 
         ("Main", "Cruise_Buttons", 0),
+        ("State", "STOP_START", 0),
       ]
 
       checks += [
         ("Dashlights", 10),
         ("BodyInfo", 10),
+        ("STOP_START", 50),
       ]
 
       # Brake_Status is on can1 for OUTBACK
