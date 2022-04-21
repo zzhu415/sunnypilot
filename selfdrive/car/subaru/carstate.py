@@ -101,7 +101,8 @@ class CarState(CarStateBase):
     ret.standstill = ret.vEgoRaw < 0.01
     ret.standStill = self.CP.standStill
 
-    self.stop_start = bool(cp.vl["STOP_START"]["State"])
+    if self.car_fingerprint not in PREGLOBAL_CARS:
+      self.stop_start = bool(cp.vl["STOP_START"]["State"])
 
     self.cruiseState_standstill = ret.cruiseState.standstill
 

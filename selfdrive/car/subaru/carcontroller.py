@@ -9,6 +9,7 @@ class CarController():
   def __init__(self, dbc_name, CP, VM):
     self.signal_last = 0.
     self.stop_start_last = 0.
+    self.ready_last = 0.
     self.apply_steer_last = 0
     self.es_distance_cnt = -1
     self.es_lkas_cnt = -1
@@ -39,8 +40,12 @@ class CarController():
     if (CS.leftBlinkerOn or CS.rightBlinkerOn):
       self.signal_last = cur_time
 
-    if CS.stop_start:
-      self.stop_start_last = cur_time
+    if CS.CP.carFingerprint in PREGLOBAL_CARS:
+      if CS.out.cruiseState.available and CS.ready:
+        self.ready_last = cur_time
+    else:
+      if CS.stop_start:
+        self.stop_start_last = cur_time
 
     can_sends = []
 
@@ -55,7 +60,9 @@ class CarController():
       apply_steer = apply_std_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, self.p)
       self.steer_rate_limited = False
 
-      if enabled and CS.accMainEnabled and ((CS.automaticLaneChange and not CS.belowLaneChangeSpeed) or ((not ((cur_time - self.signal_last) < 1) or not CS.belowLaneChangeSpeed) and not (CS.leftBlinkerOn or CS.rightBlinkerOn))) and ((not (cur_time - self.stop_start_last) < 1) and not CS.stop_start):
+      lkas_active = enabled and CS.accMainEnabled and ((CS.automaticLaneChange and not CS.belowLaneChangeSpeed) or ((not ((cur_time - self.signal_last) < 1) or not CS.belowLaneChangeSpeed) and not (CS.leftBlinkerOn or CS.rightBlinkerOn)))
+      #if enabled and CS.accMainEnabled and ((CS.automaticLaneChange and not CS.belowLaneChangeSpeed) or ((not ((cur_time - self.signal_last) < 1) or not CS.belowLaneChangeSpeed) and not (CS.leftBlinkerOn or CS.rightBlinkerOn))) and ((not (cur_time - self.stop_start_last) < 1) and not CS.stop_start):
+      if (lkas_active and CS.CP.carFingerprint in PREGLOBAL_CARS and ((not (cur_time - self.ready_last) < 1) and not (CS.out.cruiseState.available and CS.ready))) or (lkas_active and CS.CP.carFingerprint not in PREGLOBAL_CARS and ((not (cur_time - self.stop_start_last) < 1) and not CS.stop_start)):
         self.steer_rate_limited = new_steer != apply_steer
         apply_steer_req = 1
       else:
