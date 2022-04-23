@@ -351,7 +351,7 @@ class CarController():
     if (frame % 10) == 0:
       idx = (frame//10) % 4
       hud = HUDData(int(pcm_accel), int(round(hud_v_cruise)), hud_car,
-                    hud_lanes, fcw_display, acc_alert, steer_required)
+                    hud_show_lanes and lkas_active, fcw_display, acc_alert, steer_required)
       can_sends.extend(hondacan.create_ui_commands(self.packer, CS.CP, pcm_speed, hud, CS.is_metric, idx, CS.stock_hud))
 
       if (CS.CP.openpilotLongitudinalControl) and (CS.CP.carFingerprint not in HONDA_BOSCH):
