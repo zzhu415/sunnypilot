@@ -52,8 +52,8 @@ class LatControlTorque(LatControl):
       self._torque_friction = float(Decimal(self.params.get("TorqueFriction", encoding="utf8")) * Decimal('0.01'))
       self.use_steering_angle = self._torque_use_steering_angle
       self.friction = self._torque_friction
-      self.pid = PIDController(CP.lateralTuning.torque.kp / self._torque_max_lat_accel, CP.lateralTuning.torque.ki / self._torque_max_lat_accel,
-                               k_f=CP.lateralTuning.torque.kf / self._torque_max_lat_accel, pos_limit=1.0, neg_limit=-1.0)
+      self.pid = PIDController(2.0 / self._torque_max_lat_accel, 1.0 / self._torque_max_lat_accel,
+                               k_f=(0.5 / self._torque_max_lat_accel), pos_limit=1.0, neg_limit=-1.0)
       self.mpc_frame = 0
 
   def update(self, active, CS, CP, VM, params, last_actuators, desired_curvature, desired_curvature_rate, llk):
