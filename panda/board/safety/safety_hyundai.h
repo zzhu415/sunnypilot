@@ -194,8 +194,8 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
       }
     }
 
-    if (addr == 1056) {
-      bool acc_main_on = GET_BYTES_04(to_push) & 0x1; // ACC main_on signal
+    if (addr == 1265) {
+      bool acc_main_on = (GET_BYTES_04(to_push) >> 3) & 0x1; // ACC main_on signal
       if (acc_main_on && !acc_main_on_prev)
       {
         controls_allowed = 1;
@@ -203,8 +203,8 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
       acc_main_on_prev = acc_main_on;
     }
 
-    if (addr == 1056) {
-      bool acc_main_on = GET_BYTES_04(to_push) & 0x1; // ACC main_on signal
+    if (addr == 1265) {
+      bool acc_main_on = (GET_BYTES_04(to_push) >> 3) & 0x1; // ACC main_on signal
       if (acc_main_on_prev != acc_main_on)
       {
         disengageFromBrakes = false;
