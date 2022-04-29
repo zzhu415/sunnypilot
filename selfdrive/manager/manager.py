@@ -38,6 +38,7 @@ def manager_init():
   default_params = [
     ("CompletedTrainingVersion", "0"),
     ("HasAcceptedTerms", "0"),
+    ("NoOffroadFix", "0"),
     ("OpenpilotEnabledToggle", "1"),
   ]
   if not PC:
