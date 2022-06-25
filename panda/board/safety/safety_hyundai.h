@@ -147,9 +147,6 @@ static uint8_t hyundai_compute_checksum(CANPacket_t *to_push) {
 
 static int hyundai_rx_hook(CANPacket_t *to_push) {
 
-  controls_allowed = 1;
-  return true;
-
   bool valid = addr_safety_check(to_push, &hyundai_rx_checks,
                                  hyundai_get_checksum, hyundai_compute_checksum,
                                  hyundai_get_counter);
@@ -234,8 +231,8 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
       lfa_pressed_prev = lfa_pressed;
     }
 
-    if (addr == 1265) {
-      bool acc_main_on = (GET_BYTES_04(to_push) >> 3) & 0x1; // ACC main_on signal
+    if (addr == 608) {
+      bool acc_main_on = (GET_BYTE(to_push, 3) & 0x2U) > 0; // CRUISE_LAMP_M signal
       if (acc_main_on && !acc_main_on_prev)
       {
         controls_allowed = 1;
@@ -243,8 +240,8 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
       acc_main_on_prev = acc_main_on;
     }
 
-    if (addr == 1265) {
-      bool acc_main_on = (GET_BYTES_04(to_push) >> 3) & 0x1; // ACC main_on signal
+    if (addr == 608) {
+      bool acc_main_on = (GET_BYTE(to_push, 3) & 0x2U) > 0; // CRUISE_LAMP_M signal
       if (acc_main_on_prev != acc_main_on)
       {
         disengageFromBrakes = false;
@@ -289,7 +286,6 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
 static int hyundai_tx_hook(CANPacket_t *to_send) {
 
   int tx = 1;
-  return tx;
   int addr = GET_ADDR(to_send);
 
   if (hyundai_longitudinal) {
