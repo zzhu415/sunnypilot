@@ -178,6 +178,12 @@ class CarController():
                 elif cruise_button == 2:
                   self.graButtonStatesToSend = BUTTON_STATES.copy()
                   self.graButtonStatesToSend["decelCruise"] = True
+                elif cruise_button == 3:
+                  self.graButtonStatesToSend = BUTTON_STATES.copy()
+                  self.graButtonStatesToSend["resumeCruise"] = True
+                elif cruise_button == 4:
+                  self.graButtonStatesToSend = BUTTON_STATES.copy()
+                  self.graButtonStatesToSend["setCruise"] = True
               elif self.acc_type == 1:
                 if cruise_button == 1:
                   self.graButtonStatesToSend = BUTTON_STATES.copy()
@@ -185,6 +191,12 @@ class CarController():
                 elif cruise_button == 2:
                   self.graButtonStatesToSend = BUTTON_STATES.copy()
                   self.graButtonStatesToSend["setCruise"] = True
+                elif cruise_button == 3:
+                  self.graButtonStatesToSend = BUTTON_STATES.copy()
+                  self.graButtonStatesToSend["accelCruise"] = True
+                elif cruise_button == 4:
+                  self.graButtonStatesToSend = BUTTON_STATES.copy()
+                  self.graButtonStatesToSend["decelCruise"] = True
         if CS.graMsgBusCounter != self.graMsgBusCounterPrev:
           self.graMsgBusCounterPrev = CS.graMsgBusCounter
           if self.graButtonStatesToSend is not None:
@@ -262,7 +274,7 @@ class CarController():
     return self.button_picker()
 
   def reset_button(self):
-    if self.button_type != 3:
+    if self.button_type != 5:
       self.button_type = 0
 
   def type_default(self):
@@ -274,34 +286,66 @@ class CarController():
     self.target_speed = self.init_speed
     speed_diff = round(self.target_speed - self.v_set_dis)
     if speed_diff > 0:
-      self.button_type = 1
+      if not speed_diff > 10:
+        self.button_type = 1
+      else:
+        self.button_type = 3
     elif speed_diff < 0:
-      self.button_type = 2
+      if not speed_diff < 10:
+        self.button_type = 2
+      else:
+        self.button_type = 4
     return None
 
   def type_1(self):
-    cruise_button = 1
+    cruise_button = None
     self.button_count += 1
     if self.target_speed == self.v_set_dis:
       self.button_count = 0
-      self.button_type = 3
-    elif self.button_count > 5:
+      self.button_type = 5
+    elif self.button_count > 10:
+      cruise_button = 1
       self.button_count = 0
-      self.button_type = 3
+      self.button_type = 5
     return cruise_button
 
   def type_2(self):
-    cruise_button = 2
+    cruise_button = None
     self.button_count += 1
     if self.target_speed == self.v_set_dis:
       self.button_count = 0
-      self.button_type = 3
-    elif self.button_count > 5:
+      self.button_type = 5
+    elif self.button_count > 10:
+      cruise_button = 2
       self.button_count = 0
-      self.button_type = 3
+      self.button_type = 5
     return cruise_button
 
   def type_3(self):
+    cruise_button = None
+    self.button_count += 1
+    if self.target_speed == self.v_set_dis:
+      self.button_count = 0
+      self.button_type = 5
+    elif self.button_count > 10:
+      cruise_button = 3
+      self.button_count = 0
+      self.button_type = 5
+    return cruise_button
+
+  def type_4(self):
+    cruise_button = None
+    self.button_count += 1
+    if self.target_speed == self.v_set_dis:
+      self.button_count = 0
+      self.button_type = 5
+    elif self.button_count > 10:
+      cruise_button = 4
+      self.button_count = 0
+      self.button_type = 5
+    return cruise_button
+
+  def type_5(self):
     cruise_button = None
     self.button_count += 1
     if self.button_count > self.t_interval:
