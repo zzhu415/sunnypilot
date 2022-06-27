@@ -356,7 +356,7 @@ static int volkswagen_mqb_tx_hook(CANPacket_t *to_send) {
 
   // FORCE CANCEL: ensuring that only the cancel button press is sent when controls are off.
   // This avoids unintended engagements while still allowing resume spam
-  if ((addr == MSG_GRA_ACC_01) && !controls_allowed && !controls_allowed_long) {
+  if (addr == MSG_GRA_ACC_01) {
     // disallow resume and set: bits 16 and 19
     /**if (((GET_BYTE(to_send, 2) & 0x9U) != 0U) || ((GET_BYTE(to_send, 2) & 0x6U) != 0U)) {
       tx = 0;
