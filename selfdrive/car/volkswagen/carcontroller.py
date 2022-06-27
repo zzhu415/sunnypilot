@@ -285,7 +285,7 @@ class CarController():
     if self.target_speed == self.v_set_dis:
       self.button_count = 0
       self.button_type = 3
-    elif self.button_count > 5:
+    elif self.button_count > 2:
       self.button_count = 0
       self.button_type = 3
     return cruise_button
@@ -296,7 +296,7 @@ class CarController():
     if self.target_speed == self.v_set_dis:
       self.button_count = 0
       self.button_type = 3
-    elif self.button_count > 5:
+    elif self.button_count > 2:
       self.button_count = 0
       self.button_type = 3
     return cruise_button
