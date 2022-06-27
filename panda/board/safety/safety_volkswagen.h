@@ -358,7 +358,15 @@ static int volkswagen_mqb_tx_hook(CANPacket_t *to_send) {
   // This avoids unintended engagements while still allowing resume spam
   if ((addr == MSG_GRA_ACC_01) && !controls_allowed && !controls_allowed_long) {
     // disallow resume and set: bits 16 and 19
-    if (((GET_BYTE(to_send, 2) & 0x9U) != 0U) || ((GET_BYTE(to_send, 2) & 0x6U) != 0U)) {
+    /**if (((GET_BYTE(to_send, 2) & 0x9U) != 0U) || ((GET_BYTE(to_send, 2) & 0x6U) != 0U)) {
+      tx = 0;
+    }**/
+    bool allowed_set_cruise = ((GET_BYTE(to_send, 2) & 0x1U) != 0U) && controls_allowed && controls_allowed_long;
+    bool allowed_resume_cruise = ((GET_BYTE(to_send, 2) & 0x8U) != 0U) && controls_allowed && controls_allowed_long;
+    bool allowed_accel_cruise = ((GET_BYTE(to_send, 2) & 0x2U) != 0U) && controls_allowed && controls_allowed_long;
+    bool allowed_decel_cruise = ((GET_BYTE(to_send, 2) & 0x4U) != 0U) && controls_allowed && controls_allowed_long;
+    bool allowed_cancel = ((GET_BYTE(to_send, 1) & 0x20U) != 0U) && cruise_engaged_prev;
+    if (!(allowed_set_cruise || allowed_resume_cruise || allowed_accel_cruise || allowed_decel_cruise || allowed_cancel)) {
       tx = 0;
     }
   }
