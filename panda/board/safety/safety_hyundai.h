@@ -231,6 +231,22 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
       lfa_pressed_prev = lfa_pressed;
     }
 
+    if (addr == 1265) {
+      bool acc_main_btn = (GET_BYTES_04(to_push) >> 3) & 0x1; // ACC main_on signal
+      int main_enabled = false;
+      if (acc_main_btn && !acc_main_on_prev) {
+        main_enabled = !main_enabled;
+        if (main_enabled) {
+          controls_allowed = 1;
+        }
+        if (!main_enabled) {
+          disengageFromBrakes = false;
+          controls_allowed = 0;
+        }
+      }
+      acc_main_on_prev = acc_main_btn;
+    }
+
     if (addr == 608) {
       bool acc_main_on = (GET_BYTE(to_push, 3) & 0x2U) > 0; // CRUISE_LAMP_M signal
       if (acc_main_on)
@@ -265,7 +281,7 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
       brake_pressed = (GET_BYTE(to_push, 6) >> 7) != 0U;
     }
 
-    bool stock_ecu_detected = ((addr == 832) && (addr == 909));
+    bool stock_ecu_detected = (addr == 832);
 
     // If openpilot is controlling longitudinal we need to ensure the radar is turned off
     // Enforce by checking we don't see SCC12
