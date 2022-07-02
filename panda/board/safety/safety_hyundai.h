@@ -233,21 +233,15 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
 
     if (addr == 608) {
       bool acc_main_on = (GET_BYTE(to_push, 3) & 0x2U) > 0; // CRUISE_LAMP_M signal
-      if (acc_main_on && !acc_main_on_prev)
+      if (acc_main_on)
       {
         controls_allowed = 1;
       }
-      acc_main_on_prev = acc_main_on;
-    }
-
-    if (addr == 608) {
-      bool acc_main_on = (GET_BYTE(to_push, 3) & 0x2U) > 0; // CRUISE_LAMP_M signal
-      if (acc_main_on_prev != acc_main_on)
+      if (!acc_main_on)
       {
         disengageFromBrakes = false;
         controls_allowed = 0;
       }
-      acc_main_on_prev = acc_main_on;
     }
 
     // read gas pressed signal

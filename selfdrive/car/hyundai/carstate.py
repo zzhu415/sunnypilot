@@ -38,6 +38,7 @@ class CarState(CarStateBase):
     self.prev_cruise_buttons = 0
     self.acc_active = False
     self.cruise_active = False
+    self.prev_main_enabled = False
 
     self.non_scc = CP.sccBus == -1
 
@@ -54,6 +55,7 @@ class CarState(CarStateBase):
 
     self.prev_lfa_enabled = self.lfa_enabled
     self.prev_acc_main_enabled = self.acc_main_enabled
+    self.prev_main_enabled = ret.cruiseState.available
     self.prev_cruise_buttons = self.cruise_buttons
     self.cruise_buttons = cp.vl["CLU11"]["CF_Clu_CruiseSwState"]
     ret.cruiseButtons = self.cruise_buttons
@@ -140,6 +142,11 @@ class CarState(CarStateBase):
       #      self.accEnabled = True
 
       if not self.disable_mads:
+        if not self.prev_main_enabled and ret.cruiseState.available:
+          if self.CP.carFingerprint in FEATURES["use_lfa_button"]:
+            self.lfaEnabled = True
+          elif self.CP.carFingerprint not in FEATURES["use_lfa_button"]:
+            self.accMainEnabled = True
         if self.CP.carFingerprint in FEATURES["use_lfa_button"]:
           if self.prev_lfa_enabled != 1: #1 == not LFA button
             if self.lfa_enabled == 1:
