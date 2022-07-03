@@ -15,6 +15,9 @@ VisualAlert = car.CarControl.HUDControl.VisualAlert
 LongCtrlState = car.CarControl.Actuators.LongControlState
 SpeedLimitControlState = log.LongitudinalPlan.SpeedLimitControlState
 
+STEER_FAULT_MAX_TORQUE = 28671 # 32768 - 4096 - 1
+
+
 def compute_gb_honda_bosch(accel, speed):
   #TODO returns 0s, is unused
   return 0.0, 0.0
@@ -139,6 +142,11 @@ class CarController():
     self.lead_distance_counter_prev = 1
     self.rough_lead_speed = 0.0
 
+    self.torque_limit = 0
+    self.torque_limit_frames = 0
+    self.cut_steer_frames = 0
+    self.cut_steer = False
+
   def rough_speed(self, lead_distance):
     if self.prev_lead_distance != lead_distance:
       self.lead_distance_counter_prev = self.lead_distance_counter
@@ -203,10 +211,32 @@ class CarController():
       if (frame % 10) == 0:
         can_sends.append((0x18DAB0F1, 0, b"\x02\x3E\x80\x00\x00\x00\x00\x00", 1))
 
+    if lkas_active:
+      self.torque_limit += abs(apply_steer)
+    else:
+      self.torque_limit = 0
+
+    if lkas_active and self.torque_limit > STEER_FAULT_MAX_TORQUE:
+      self.torque_limit_frames += 1
+    else:
+      self.torque_limit_frames = 0
+
+    if self.torque_limit_frames > 1:
+      self.cut_steer = True
+    elif self.cut_steer_frames > 1:
+      self.cut_steer_frames = 0
+      self.cut_steer = False
+
+    cut_steer_temp = False
+    if self.cut_steer:
+      cut_steer_temp = True
+      self.torque_limit_frames = 0
+      self.cut_steer_frames += 1
+
     # Send steering command.
     idx = frame % 4
     can_sends.append(hondacan.create_steering_control(self.packer, apply_steer,
-      lkas_active, CS.CP.carFingerprint, idx, CS.CP.openpilotLongitudinalControl))
+      lkas_active and not cut_steer_temp, CS.CP.carFingerprint, idx, CS.CP.openpilotLongitudinalControl))
 
     stopping = actuators.longControlState == LongCtrlState.stopping
     starting = actuators.longControlState == LongCtrlState.starting
