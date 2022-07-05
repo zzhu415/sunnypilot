@@ -15,7 +15,7 @@ VisualAlert = car.CarControl.HUDControl.VisualAlert
 LongCtrlState = car.CarControl.Actuators.LongControlState
 SpeedLimitControlState = log.LongitudinalPlan.SpeedLimitControlState
 
-STEER_FAULT_MAX_TORQUE = 28671 # 32768 - 4096 - 1
+STEER_FAULT_MAX_TORQUE = 12287 # 16384 - 4096 - 1
 
 
 def compute_gb_honda_bosch(accel, speed):
