@@ -102,6 +102,7 @@ def create_acc_commands(packer, enabled, accel, jerk, idx, lead_visible, set_spe
     "CR_VSM_Alive": idx % 0xF,
     "CF_VSM_ConfMode": 1,
     "AEB_Status": 2,
+    "CR_VSM_ChkSum": 0,
   }
   scc12_dat = packer.make_can_msg("SCC12", 0, scc12_values)[2]
   scc12_values["CR_VSM_ChkSum"] = 0x10 - sum(sum(divmod(i, 16)) for i in scc12_dat) % 0x10
@@ -128,6 +129,7 @@ def create_acc_commands(packer, enabled, accel, jerk, idx, lead_visible, set_spe
     "FCA_DrvSetStatus": 1,
     "FCA_Status": 2, # AEB disabled
     "FCA_TimetoCollision": 2540.,
+    "CR_FCA_ChkSum": 0,
   }
   fca11_dat = packer.make_can_msg("FCA11", 0, fca11_values)[2]
   fca11_values["CR_FCA_ChkSum"] = 0x10 - sum(sum(divmod(i, 16)) for i in fca11_dat) % 0x10
