@@ -52,8 +52,8 @@ class CarState(CarStateBase):
     # cruise state
     if self.CP.openpilotLongitudinalControl:
       # These are not used for engage/disengage since openpilot keeps track of state using the buttons
-      ret.cruiseState.available = cp.vl["TCS13"]["ACCEnable"] == 0
-      ret.cruiseState.enabled = cp.vl["TCS13"]["ACC_REQ"] == 1
+      ret.cruiseState.available = True
+      ret.cruiseState.enabled = True
       ret.cruiseState.standstill = False
     else:
       ret.cruiseState.available = cp.vl["SCC11"]["MainMode_ACC"] == 1
