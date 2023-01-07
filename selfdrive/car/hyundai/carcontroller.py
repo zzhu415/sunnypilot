@@ -46,6 +46,11 @@ class CarController():
     self.last_resume_frame = 0
     self.accel = 0
 
+    self.counter_init = False
+    self.radarDisableActivated = False
+    self.radarDisableResetTimer = 0
+    self.radarDisableOverlapTimer = 0
+
   def update(self, c, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert, hud_speed,
              left_lane, right_lane, left_lane_depart, right_lane_depart):
     # Steering Torque
@@ -68,9 +73,43 @@ class CarController():
     can_sends = []
 
     # tester present - w/ no response (keeps radar disabled)
+    #if CS.CP.openpilotLongitudinalControl:
+    #  if (frame % 100) == 0:
+    #    can_sends.append([0x7D0, 0, b"\x02\x3E\x80\x00\x00\x00\x00\x00", 0])
+
+    # radar disable by XPS
     if CS.CP.openpilotLongitudinalControl:
-      if (frame % 100) == 0:
-        can_sends.append([0x7D0, 0, b"\x02\x3E\x80\x00\x00\x00\x00\x00", 0])
+      self.radarDisableOverlapTimer += 1
+      self.radarDisableResetTimer = 0
+      if self.radarDisableOverlapTimer >= 30:
+        self.radarDisableActivated = True
+        if 200 > self.radarDisableOverlapTimer > 36:
+          if frame % 41 == 0 or self.radarDisableOverlapTimer == 37:
+            can_sends.append([0x7D0, 0, b"\x02\x10\x03\x00\x00\x00\x00\x00", 0])
+          elif frame % 43 == 0 or self.radarDisableOverlapTimer == 37:
+            can_sends.append([0x7D0, 0, b"\x03\x28\x03\x01\x00\x00\x00\x00", 0])
+          elif frame % 19 == 0 or self.radarDisableOverlapTimer == 37:
+            can_sends.append([0x7D0, 0, b"\x02\x10\x85\x00\x00\x00\x00\x00", 0])  # this disables RADAR for
+      else:
+        self.counter_init = False
+        can_sends.append([0x7D0, 0, b"\x02\x10\x90\x00\x00\x00\x00\x00", 0])  # this enables RADAR
+        can_sends.append([0x7D0, 0, b"\x03\x29\x03\x01\x00\x00\x00\x00", 0])
+    elif self.radarDisableActivated:
+      can_sends.append([0x7D0, 0, b"\x02\x10\x90\x00\x00\x00\x00\x00", 0])  # this enables RADAR
+      can_sends.append([0x7D0, 0, b"\x03\x29\x03\x01\x00\x00\x00\x00", 0])
+      self.radarDisableOverlapTimer = 0
+      if frame % 50 == 0:
+        self.radarDisableResetTimer += 1
+        if self.radarDisableResetTimer > 2:
+          self.radarDisableActivated = False
+          self.counter_init = True
+    else:
+      self.radarDisableOverlapTimer = 0
+      self.radarDisableResetTimer = 0
+
+    if (frame % 50 == 0 or self.radarDisableOverlapTimer == 37) and \
+            CS.CP.openpilotLongitudinalControl and self.radarDisableOverlapTimer >= 30:
+      can_sends.append([0x7D0, 0, b"\x02\x3E\x00\x00\x00\x00\x00\x00", 0])
 
     can_sends.append(create_lkas11(self.packer, frame, self.car_fingerprint, apply_steer, lkas_active,
                                    CS.lkas11, sys_warning, sys_state, enabled,
@@ -100,7 +139,7 @@ class CarController():
 
       stopping = (actuators.longControlState == LongCtrlState.stopping)
       set_speed_in_units = hud_speed * (CV.MS_TO_MPH if CS.clu11["CF_Clu_SPEED_UNIT"] == 1 else CV.MS_TO_KPH)
-      can_sends.extend(create_acc_commands(self.packer, enabled, accel, jerk, int(frame / 2), lead_visible, set_speed_in_units, stopping))
+      can_sends.extend(create_acc_commands(self.packer, enabled, accel, jerk, frame, lead_visible, set_speed_in_units, stopping))
       self.accel = accel
 
     # 20 Hz LFA MFA message
