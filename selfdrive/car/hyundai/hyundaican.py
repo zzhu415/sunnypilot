@@ -86,11 +86,11 @@ def create_acc_commands(packer, enabled, accel, jerk, idx, lead_visible, set_spe
     "TauGapSet": 4,
     "VSetDis": set_speed if enabled else 0,
     "AliveCounterACC": idx % 0x10,
-    "ObjValid": 1 if lead_visible else 0,
-    "ACC_ObjStatus": 1 if lead_visible else 0,
+    "ObjValid": 1,
+    "ACC_ObjStatus": 1,
     "ACC_ObjLatPos": 0,
     "ACC_ObjRelSpd": 0,
-    "ACC_ObjDist": 0,
+    "ACC_ObjDist": 1,
   }
   commands.append(packer.make_can_msg("SCC11", 0, scc11_values))
 
